@@ -827,6 +827,8 @@ export default function App() {
       if (match) {
         setSelectedPostId(match.id);
       }
+    } else if (!window.location.hash && !window.location.search) {
+      setSelectedPostId(null);
     }
   }, [posts]);
 
@@ -834,13 +836,10 @@ export default function App() {
   useEffect(() => {
     if (loading) return;
     
-    // Detect if running under a static GitHub Pages environment
-    // Standard checks: is hostname "*.github.io"? Or is the current path nested (repo subpath)?
     const isGitHubPages = window.location.hostname.endsWith('github.io') || 
                           window.location.pathname.split('/').filter(Boolean).length > 1;
 
     if (isGitHubPages) {
-      // Use hash routing to preserve repo subpaths and support refreshing on static hosts
       let hashPath = '#/';
       const params = new URLSearchParams();
       
@@ -854,15 +853,20 @@ export default function App() {
         if (post) {
           params.set('post', post.slug);
         }
+      } else {
+        params.delete('post');
+        params.delete('p');
       }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
-      window.history.replaceState(null, '', `${window.location.pathname}${hashPath}${queryStr}`);
+      const nextUrl = `${window.location.pathname}${hashPath}${queryStr}`;
+      if (window.location.pathname + window.location.search + window.location.hash !== nextUrl) {
+        window.history.pushState(null, '', nextUrl);
+      }
     } else {
-      // Use pathname routing for local Express full-stack dev and custom domain deploys
       let path = '/';
       const params = new URLSearchParams(window.location.search);
-      params.delete('category'); // Strip 'category' search param if path exists, to prevent duplicate path /security?category=security
+      params.delete('category');
       
       if (selectedCategory !== 'all') {
         const categoryPath = selectedCategory === 'malwarere' ? 'MalwareRE' : selectedCategory;
@@ -880,7 +884,10 @@ export default function App() {
       }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
-      window.history.replaceState(null, '', `${window.location.origin}${path}${queryStr}`);
+      const nextUrl = `${window.location.origin}${path}${queryStr}`;
+      if (window.location.href !== nextUrl) {
+        window.history.pushState(null, '', nextUrl);
+      }
     }
   }, [selectedCategory, selectedPostId, loading, posts]);
 

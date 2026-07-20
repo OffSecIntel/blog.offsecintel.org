@@ -8,7 +8,7 @@ date: 2026-02-15
 readTime: 12 min read
 published: true
 draft: false
-bannerImage: /blog-assets/uncloaking-two-faced-android-game-il2cpp/train_game_banner.jpg
+bannerImage: /assets/uncloaking-two-faced-android-game-il2cpp/train_game_banner.jpg
 layoutMode: high-density
 themeColor: cyan
 showToc: true
