@@ -1,0 +1,17 @@
+{
+  "specification_name": "Post-Quantum Kyber-1024 Enclave Isolation Map",
+  "version": "1.0.4",
+  "target_architecture": "RISC-V Secure Cryptographic Enclave",
+  "security_level": 5,
+  "parameters": {
+    "key_size_bytes": 1568,
+    "ciphertext_size_bytes": 1568,
+    "shared_secret_size_bytes": 32,
+    "noise_parameter": 2
+  },
+  "isolation_vectors": [
+    "Hardware-enforced ring level memory virtualization",
+    "Encrypted volatile scratchpad registers",
+    "Side-channel resistant constant-time Montgomery multipliers"
+  ]
+}

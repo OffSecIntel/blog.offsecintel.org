@@ -1,0 +1,6 @@
+indicator_type,indicator_value,description,confidence_level
+domain,api.dreambus-campaign.net,Primary C2 Domain,high
+ip,194.87.112.54,Active SSH Dropper Host,high
+sha256,1dfd3068e64e526a0efbfca0496ba45b2b2b1a1c97a55d49ec23f2f0cbe141a0,Dreambus Linux Executable Miner,critical
+sha256,5d2f3b90df3a4073e5bf7e0efcbca1ba2b1b3a3c2c10bcf20d0f7a0cbe22f1c8,Dynamic Bash loader shell script,critical
+url,http://194.87.112.54/bin/miner.sh,Direct Download URL,high
