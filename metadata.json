@@ -1,0 +1,6 @@
+{
+  "name": "Cybersecurity & Scientific Research Blog Generator",
+  "description": "A highly polished, open-source markdown blogging platform tailored for cybersecurity and scientific research. Features dynamic URI paths, light/dark theme toggle, interactive threat intel (MITRE ATT&CK, CVE, IoC) widgets, a live split-screen markdown editor with an AI copilot, and static site export configurations for Hugo and Jekyll.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

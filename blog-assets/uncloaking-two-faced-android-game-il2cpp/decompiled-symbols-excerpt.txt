@@ -1,0 +1,33 @@
+--- IL2CPP METADATA RECONSTRUCTED CLASS EXCERPTS ---
+Source Binary: libil2cpp.so (ARM64)
+Metadata Version: 24
+Dump Assistant: Il2CppDumper v6.4.15
+
+// Namespace: Main
+public class FirebaseManager : MonoBehaviour // TypeDefIndex: 1248
+{
+	// Fields
+	private string appsFlyerDevKey; // 0x10
+	private string appId; // 0x18
+	private bool isInitialized; // 0x20
+
+	// Methods
+	public void Start(); // RVA: 0x00E2C1A0 Offset: 0x00E2C1A0
+	public void onConversionDataSuccess(string conversionData); // RVA: 0x00E2C3D0 Offset: 0x00E2C3D0
+	public void onConversionDataFail(string error); // RVA: 0x00E2C680 Offset: 0x00E2C680
+}
+
+// Namespace: Main
+public class GameConfig // TypeDefIndex: 1249
+{
+	// Methods
+	public static string get_BaseURL(); // RVA: 0x00E42050 Offset: 0x00E42050
+	public static bool IsEnvironmentValid(); // RVA: 0x00E422C0 Offset: 0x00E422C0
+}
+
+// Namespace: Main
+public class GameUtils // TypeDefIndex: 1250
+{
+	// Methods
+	public static string DecodeRequest(string input); // RVA: 0x00E53D80 Offset: 0x00E53D80
+}
