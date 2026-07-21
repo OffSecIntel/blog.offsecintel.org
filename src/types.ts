@@ -45,11 +45,14 @@ export interface BlogPost {
   published: boolean;
   draft?: boolean;
   bannerImage?: string;
+  showBanner?: boolean;
   layoutMode?: 'high-density' | 'frosted-glass' | 'editorial' | 'sophisticated' | 'professional';
   themeColor?: 'crimson' | 'emerald' | 'cyan' | 'amber' | 'slate' | 'violet' | 'indigo';
   showToc?: boolean;
   showAbstract?: boolean;
   impactLevel?: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  coAuthor?: string;
+  reviewer?: string;
 }
 
 export interface ExportSettings {
