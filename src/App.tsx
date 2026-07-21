@@ -766,7 +766,7 @@ export function resolveAssetUrl(url: string | undefined): string | undefined {
   return cleanUrl;
 }
 
-function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: string | null } {
+function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: string | null, dossierId: string | null } {
   const hash = window.location.hash;
   let category = 'all';
 
@@ -809,7 +809,14 @@ function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: strin
     }
   }
 
-  return { category, postId };
+  // 5. Resolve dossier / author browsing state
+  let dossierId: string | null = null;
+  const dossierSlug = params.get('dossier') || params.get('author') || params.get('researcher');
+  if (dossierSlug) {
+    dossierId = dossierSlug;
+  }
+
+  return { category, postId, dossierId };
 }
 
 
@@ -905,12 +912,18 @@ export default function App() {
   // Handle initial deep linking once posts are loaded
   useEffect(() => {
     if (posts.length === 0) return;
-    const { category, postId } = parseStateFromUrl(posts);
+    const { category, postId, dossierId } = parseStateFromUrl(posts);
     if (postId) {
       setSelectedPostId(postId);
     }
     if (category !== 'all') {
       setSelectedCategory(category);
+    }
+    if (dossierId) {
+      setShowDossier(true);
+      setDossierSelectedResearcherId(dossierId);
+    } else {
+      setShowDossier(false);
     }
   }, [posts]);
 
@@ -918,9 +931,15 @@ export default function App() {
   useEffect(() => {
     if (posts.length === 0) return;
     const handlePopState = () => {
-      const { category, postId } = parseStateFromUrl(posts);
+      const { category, postId, dossierId } = parseStateFromUrl(posts);
       setSelectedCategory(category);
       setSelectedPostId(postId);
+      if (dossierId) {
+        setShowDossier(true);
+        setDossierSelectedResearcherId(dossierId);
+      } else {
+        setShowDossier(false);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => {
@@ -955,6 +974,12 @@ export default function App() {
           params.set('post', post.slug);
         }
       }
+
+      if (showDossier && dossierSelectedResearcherId) {
+        params.set('dossier', dossierSelectedResearcherId);
+      } else {
+        params.delete('dossier');
+      }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       targetAbsoluteUrl = `${window.location.origin}${window.location.pathname}${hashPath}${queryStr}`;
@@ -978,6 +1003,12 @@ export default function App() {
         params.delete('post');
         params.delete('p');
       }
+
+      if (showDossier && dossierSelectedResearcherId) {
+        params.set('dossier', dossierSelectedResearcherId);
+      } else {
+        params.delete('dossier');
+      }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       targetAbsoluteUrl = `${window.location.origin}${path}${queryStr}`;
@@ -994,7 +1025,7 @@ export default function App() {
     } else {
       isFirstSync.current = false;
     }
-  }, [selectedCategory, selectedPostId, loading, posts]);
+  }, [selectedCategory, selectedPostId, showDossier, dossierSelectedResearcherId, loading, posts]);
 
   // Sync scroll progress on post reader
   useEffect(() => {
