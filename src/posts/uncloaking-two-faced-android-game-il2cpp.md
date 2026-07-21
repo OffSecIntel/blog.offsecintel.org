@@ -4,11 +4,12 @@ slug: uncloaking-two-faced-android-game-il2cpp
 summary: This report details the full static and dynamic analysis of com.circlelanes.trains, a dual-behavior Android application employing AppsFlyer tracking, PlayerPrefs state storage, and dynamic WebSockets to deliver covert real-money gambling platforms, first discovered in February 2026.
 category: malwarere
 author: Nayan Rande
+reviewer: Rahul Adhikari
 date: 2026-02-15
 readTime: 12 min read
 published: true
 draft: false
-bannerImage: /assets/uncloaking-two-faced-android-game-il2cpp/train_game_banner.jpg
+bannerImage: /blog-assets/uncloaking-two-faced-android-game-il2cpp/threat_intel_banner.jpg
 layoutMode: high-density
 themeColor: cyan
 showToc: true
@@ -60,7 +61,7 @@ Like any Android malware analysis, the first step is to inspect the `AndroidMani
 
 This permission is the gateway to the **Play Install Referrer API**, allowing the app to query its own installation source. This immediately told us that the application's logic is dependent on how it was installed. The manifest did *not* contain a static `BroadcastReceiver` for the older `com.android.vending.INSTALL_REFERRER` action, confirming the app uses the modern, runtime API.
 
-### 2.2. The First Domino: The Firebase Callback
+### 2.2. The First Domino: The AppsFlyer Callback
 
 The presence of the referrer permission, combined with an intent-filter for the `com.appsflyer.referrer.INSTALL_PROVIDER` service in the manifest, strongly indicated that the AppsFlyer SDK was being used to manage the attribution process. The SDK's standard flow involves invoking a callback when attribution data is successfully retrieved.
 

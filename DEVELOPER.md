@@ -6,27 +6,35 @@ Welcome to the **OffSecIntel Security Publications Portal** developer guide. Thi
 
 ## 🏗️ 1. System Architecture
 
-The application is structured as a **hybrid full-stack (Express + Vite)** system. It operates in two environments:
+The application is structured as a **hybrid full-stack (Express + Vite)** system designed to operate seamlessly across both development workstations and zero-overhead static hosting.
+
+### System Architecture Map
+
+```mermaid
+graph TD
+    subgraph Client [React 19 Frontend SPA]
+        A[Router & Core State] -->|Deep Links /?post=slug| B[Post Detail Screen]
+        B -->|Renders Metadata| C[ThemeBannerFallback SVG]
+        B -->|Renders Post Body| D[MarkdownRenderer Engine]
+        B -->|Analyst Mode Enabled| E[ArticleAssetsWidget Panel]
+    end
+
+    subgraph Development [Local Dev Environment - Port 3000]
+        F[Vite Dev Server] -->|Hot Module Replacement| Client
+        G[Express API Server] -->|Mounts as Middleware| F
+        E -->|API Upload / Delete| G
+        G -->|Writes File Systems| H[(Local blog-assets/ Repository)]
+    end
+
+    subgraph Production [Statically Hosted Build - GitHub Pages]
+        I[GitHub Actions CI/CD Pipeline] -->|npm run build| J[Client Static Output dist/]
+        J -->|Hash Router fallback| K[Vite static server / CDN]
+        H -->|Bundled Assets| J
+    end
+```
 
 ### Development Architecture
 In development, Express acts as the primary host. The Vite development server is mounted as an internal middleware inside Express. This provides rapid feedback, live hot module reloading (HMR) for client assets, and instant API responses from the same port (`3000`).
-
-```
-┌────────────────────────────────────────────────────────┐
-│                    DEVELOPMENT PORT 3000               │
-│                                                        │
-│  ┌───────────────┐  HTTP requests   ┌───────────────┐  │
-│  │  React Client │ ────────────────> │ Express Host  │  │
-│  │   (Vite App)  │ <──────────────── │  (server.ts)  │  │
-│  └───────────────┘  static bundles  └───────────────┘  │
-│                             ▲               │          │
-│                             │ mounts        │ writes   │
-│                      ┌─────────────┐        ▼          │
-│                      │  Vite HMR   │   blog-assets/    │
-│                      │ Middleware  │   posts.json     │
-│                      └─────────────┘                  │
-└────────────────────────────────────────────────────────┘
-```
 
 ### Production Architecture
 During compilation (`npm run build`):
@@ -39,17 +47,6 @@ During compilation (`npm run build`):
 ## 📂 2. File Directory Structures & Asset Management
 
 To support robust asset isolation, each publication is associated with a distinct subdirectory under `/blog-assets/` matching its slug.
-
-### Post ID generation
-
-Each post is assigned an internal ID during markdown parsing in [src/App.tsx](src/App.tsx).
-
-The current logic is:
-- if a post frontmatter includes a numeric `id`, that value is used
-- otherwise the app generates a deterministic numeric ID from the post slug or filename
-- the slug remains separate and is used for URL-friendly routing and deep linking
-
-This prevents hardcoded IDs from being scattered across markdown files while still keeping IDs numeric and stable for app logic.
 
 ```
 workspace/
@@ -271,7 +268,7 @@ Author/Researcher profiles are identified by their lowercase ID (e.g., `nayan`, 
 
 ## 📝 8. Editorial Pipeline & Metadata Lifecycle
 
-For security and privacy compliance (particularly on public static pages where anyone has repo access), the editorial pipeline uses two independent markdown header fields in `/src/posts/*.md` files:
+For security and privacy compliance (particularly on public static pages where anyone has repo access), the editorial pipeline uses three independent markdown header fields in `/src/posts/*.md` files:
 
 ### A. Header Definitions
 1. **`published: <boolean>`** (e.g., `published: true` or `published: false`)
@@ -280,6 +277,8 @@ For security and privacy compliance (particularly on public static pages where a
    - Indicates if the article is actively in development or peer-review.
 3. **`showAbstract: <boolean>`** (e.g., `showAbstract: true` or `showAbstract: false`)
    - Optional. Controls the visibility of the "Abstract / Executive Summary" block at the top of the article. Setting this to `false` prevents redundancy for articles where authors prefer only the primary summary view.
+4. **`showBanner: <boolean>`** (e.g., `showBanner: true` or `showBanner: false`)
+   - Optional. Determines whether the header banner (featured image or abstract theme pattern) should be displayed inside the article page. Default is `true`.
 
 ### B. Resolution Rules
 To prevent leakage of unpublished research or drafts on public repositories:
@@ -293,6 +292,7 @@ To optimize the readability of deep-dive analyses without cluttering shorter bul
 - **Stateful Navigation:** When one or more `<!-- pagebreak -->` tags are detected, the frontend automatically activates the `TacticalPageNavigator` component, enabling step-by-step progress controls. If no pagebreak is present, the article is delivered in full with a standard single-page layout.
 - **Header Levels:** The `MarkdownRenderer` handles all header depths up to H6 (`######`), with optimized, responsive visual style configurations for sub-headings.
 - **Advanced List Parsing:** Supports both unordered (`-`, `*`) and ordered lists (e.g., `1.`, `2.`) with dedicated rendering containers, nested indents, and bullet style definitions, preventing multi-line lists from folding into simple text paragraphs.
+- **Markdown Image Rendering:** The renderer parses standard Markdown image syntax (`![Alt Text](URL)`) to display responsive, centered figures framed in subtle borders, soft shadows, and clean, italicized caption labels displaying the alternate text.
 
 ### D. Table of Contents Pagination Sync
 To prevent broken anchor links when articles are split into multiple pages:
@@ -305,3 +305,22 @@ To facilitate dynamic analysis for reverse engineers and analysts, the portal na
 - **Upload Support:** Authors can upload mobile APK files via the Base64 asset upload channel by enabling `AUTHOR_WRITE` mode.
 - **Visual Warning Banners:** When any file ending in `.apk` is present in the publication's assets directory, the `ArticleAssetsWidget` automatically renders a highly visible, crimson-themed `ANALYST_RESOURCE: APK_TARGET` warning banner with a prominent direct download button.
 - **Payload Badging:** Inside the assets listing, APK samples are flagged with a customized warning badge (`APK_SAMPLE`) and a pulsing smartphone icon to indicate their dynamic binary payload status.
+
+### F. Zero-Maintenance Decisional Banner & Falling-Back Engine
+From a static blog site's perspective, editorial changes must be automatic and driven solely by metadata rather than interactive toggles. The display of banners inside an article follows a strict, zero-overhead decisional flowchart:
+
+```mermaid
+graph TD
+    Start[Render Post Banner] --> Q1{Is showBanner !== false?}
+    Q1 -->|No| NoBanner[Do Not Render Banner Container]
+    Q1 -->|Yes| Q2{Is bannerImage Specified?}
+    Q2 -->|Yes| RenderImage[Render Featured Image from URL / Repository Path]
+    Q2 -->|No| RenderFallback[Render High-Tech Abstract SVG ThemeBannerFallback]
+    RenderFallback --> CategoryMatch{Post Category?}
+    CategoryMatch -->|malwarere| HexMesh[Hexagonal Node Mesh & Assembler Code]
+    CategoryMatch -->|research| QuantumWaves[Mathematical Post-Quantum Waveforms]
+    CategoryMatch -->|security| EnclaveRings[Interlocking Secure Enclave Concentric Rings]
+    CategoryMatch -->|other| RadarSweep[Dynamic Coordinate Radar Sweep]
+```
+
+*   **Dynamic Fallback Patterns:** If no `bannerImage` is specified for a post, the `ThemeBannerFallback` component renders an inline SVG layout representing the topic's category. This incorporates category-specific visual motifs (such as a hexagonal mesh with binary streams for malware research, mathematical wave equations for security research, and concentric security enclaves for host security) mapped to the post's exact `themeColor` scheme.

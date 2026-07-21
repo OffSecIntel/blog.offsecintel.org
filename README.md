@@ -56,6 +56,18 @@ To accommodate very long, extensive malware analyses, intelligence briefs, or sy
 
 ---
 
+## 🎨 Smart Aesthetic Banners & Advanced Rendering
+To ensure the publication layout feels polished and clinical across all screen sizes, the platform automates banner aesthetics entirely via file frontmatter metadata and standard Markdown syntax:
+*   **Header Banner Control (`showBanner`):** Setting `showBanner: false` in the markdown frontmatter completely hides the header banner area of the article page. This is ideal for short security bulletins or technical posts where authors prefer immediate code density.
+*   **High-Tech SVG Abstract Fallbacks:** If `showBanner` is `true` (or omitted) but no `bannerImage` path is specified, the engine dynamically renders a beautiful, custom vector artwork banner based on the post's **category** and **theme color**:
+    *   **Malware RE:** Hexagonal Node Mesh with embedded assembly binary data lines.
+    *   **Security Research:** Mathematical post-quantum orbits and waveforms symbolizing cryptographic enclaves.
+    *   **System Security:** Interlocking circular concentric rings with hypervisor and eBPF markers.
+    *   **Others:** Modern high-frequency coordinates and dynamic radar sweep sweeps.
+*   **Markdown Image Figures:** Standard markdown image syntax `![Caption](image_url)` is parsed natively into centered figures framed by subtle borders, soft shadows, and clean italicized captions displaying the alternative text.
+
+---
+
 ## ✍️ How to Add a New Blog Post
 All blog posts are parsed from standalone markdown files inside **`src/posts/`**:
 1.  Create a `.md` file inside `src/posts/` (e.g., `src/posts/new-vulnerability.md`).

@@ -14,7 +14,6 @@ const app = express();
 const PORT = 3000;
 const POSTS_FILE = path.join(process.cwd(), "src", "posts.json");
 const BLOG_ASSETS_DIR = path.join(process.cwd(), "blog-assets");
-const PUBLISHED_ASSET_SLUGS = new Set(["uncloaking-two-faced-android-game-il2cpp"]);
 
 // Ensure blog-assets directory exists
 if (!fs.existsSync(BLOG_ASSETS_DIR)) {
@@ -24,26 +23,8 @@ if (!fs.existsSync(BLOG_ASSETS_DIR)) {
 // Middleware to parse JSON
 app.use(express.json({ limit: '15mb' }));
 
-function isAllowedAssetSlug(slug: string) {
-  return PUBLISHED_ASSET_SLUGS.has(slug);
-}
-
-// Serve static blog assets for the approved post only
-app.use("/blog-assets", (req, res, next) => {
-  const parts = req.path.split('/').filter(Boolean);
-  if (parts.length === 0) {
-    res.status(404).json({ error: "Asset not found" });
-    return;
-  }
-
-  const slug = parts[0];
-  if (!isAllowedAssetSlug(slug)) {
-    res.status(404).json({ error: "Asset not found" });
-    return;
-  }
-
-  express.static(BLOG_ASSETS_DIR)(req, res, next);
-});
+// Serve static blog assets
+app.use("/blog-assets", express.static(BLOG_ASSETS_DIR));
 
 // Helper to load posts
 function loadPosts(): BlogPost[] {
@@ -113,10 +94,6 @@ app.delete("/api/posts/:id", (req, res) => {
 app.get("/api/posts/:slug/assets", (req, res) => {
   try {
     const { slug } = req.params;
-    if (!isAllowedAssetSlug(slug)) {
-      res.status(404).json({ error: "Asset not found" });
-      return;
-    }
     const postDir = path.join(BLOG_ASSETS_DIR, slug);
     if (!fs.existsSync(postDir)) {
       fs.mkdirSync(postDir, { recursive: true });
@@ -149,10 +126,6 @@ app.get("/api/posts/:slug/assets", (req, res) => {
 app.post("/api/posts/:slug/assets", (req, res) => {
   try {
     const { slug } = req.params;
-    if (!isAllowedAssetSlug(slug)) {
-      res.status(404).json({ error: "Asset not found" });
-      return;
-    }
     const { filename, content } = req.body;
     if (!filename || !content) {
        res.status(400).json({ error: "Missing required fields (filename, content)" });
@@ -193,10 +166,6 @@ app.post("/api/posts/:slug/assets", (req, res) => {
 app.delete("/api/posts/:slug/assets/:filename", (req, res) => {
   try {
     const { slug, filename } = req.params;
-    if (!isAllowedAssetSlug(slug)) {
-      res.status(404).json({ error: "Asset not found" });
-      return;
-    }
     const filePath = path.join(BLOG_ASSETS_DIR, slug, filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);

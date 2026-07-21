@@ -248,6 +248,37 @@ export function MarkdownRenderer({ content, themeColor = 'crimson', isDark = fal
       continue;
     }
 
+    // 1.5. Check for Markdown Images
+    if (trimmedLine.startsWith('![') && trimmedLine.endsWith(')')) {
+      flushBlock();
+      const match = trimmedLine.match(/^!\[(.*?)\]\((.*?)\)$/);
+      if (match) {
+        const altText = match[1];
+        const imageUrl = match[2];
+        const blockId = `img-block-${blockIdCounter++}`;
+        const resolvedUrl = imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('data:') 
+          ? imageUrl 
+          : (imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl);
+          
+        blocks.push(
+          <div key={blockId} id={blockId} className="my-6 p-4 rounded-xl border border-slate-200 dark:border-slate-800/85 bg-slate-50 dark:bg-slate-900/30 flex flex-col items-center">
+            <img 
+              src={resolvedUrl} 
+              alt={altText} 
+              className="w-full max-w-2xl rounded-lg shadow-sm border border-slate-200 dark:border-slate-800" 
+              referrerPolicy="no-referrer"
+            />
+            {altText && (
+              <p className="mt-2.5 text-xs text-center text-slate-400 dark:text-slate-500 font-sans italic">
+                {altText}
+              </p>
+            )}
+          </div>
+        );
+        continue;
+      }
+    }
+
     // 2. Check for Headings
     if (trimmedLine.startsWith('#')) {
       flushBlock();

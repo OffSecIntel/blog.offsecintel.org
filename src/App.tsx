@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
+import { ThemeBannerFallback } from './components/ThemeBannerFallback';
 
 // ----------------------------------------------------------------------
 // Hugo / Jekyll Style Static Markdown Loading Engine
@@ -54,7 +55,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const fileBaseName = filename.replace(/\.md$/, '').split('/').pop() || 'untitled';
   const slug = frontmatter.slug || fileBaseName;
   const rawId = frontmatter.id?.trim();
-  const id = rawId && /^\d+$/.test(rawId) ? rawId : generateNumericId(slug);
+  const id = rawId && rawId.length > 0 ? rawId : generateNumericId(slug);
 
   const title = frontmatter.title || 'Untitled Post';
   const category = frontmatter.category || 'general';
@@ -71,11 +72,14 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const published = frontmatter.published !== 'false' && frontmatter.draft !== 'true';
   const draft = frontmatter.draft === 'true' || frontmatter.published === 'false';
   const bannerImage = frontmatter.bannerImage || undefined;
+  const showBanner = frontmatter.showBanner !== 'false';
   const layoutMode = (frontmatter.layoutMode as BlogPost['layoutMode']) || 'high-density';
   const themeColor = (frontmatter.themeColor as BlogPost['themeColor']) || 'crimson';
   const showToc = frontmatter.showToc === 'true';
   const showAbstract = frontmatter.showAbstract !== 'false';
   const impactLevel = (frontmatter.impactLevel as BlogPost['impactLevel']) || undefined;
+  const coAuthor = frontmatter.coAuthor || undefined;
+  const reviewer = frontmatter.reviewer || undefined;
 
   // Reconstruct threatIntel fields
   let threatIntel: any = undefined;
@@ -142,11 +146,14 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
     published,
     draft,
     bannerImage,
+    showBanner,
     layoutMode,
     themeColor,
     showToc,
     showAbstract,
     impactLevel,
+    coAuthor,
+    reviewer,
     threatIntel
   };
 }
@@ -232,7 +239,9 @@ export function loadStaticAuthorProfiles(): AuthorProfile[] {
       const rawModule = modules[path];
       const rawContent = typeof rawModule === 'string' ? rawModule : (rawModule.default || '');
       const parsed = parseAuthorProfile(path, rawContent);
-      parsedProfiles.push(parsed);
+      if (parsed.published) {
+        parsedProfiles.push(parsed);
+      }
     }
   }
   
@@ -709,6 +718,9 @@ export function getAuthorDisplay(authorName: string, post?: BlogPost): string {
   if (lower.includes('offsec') || lower.includes('research') || lower.includes('desk')) {
     return 'OffSecIntel Research Desk (offsec_desk)';
   }
+  if (lower.includes('rahul') || lower.includes('adhikari')) {
+    return 'Rahul Adhikari (ci9her)';
+  }
   return authorName;
 }
 
@@ -723,11 +735,93 @@ export function getAuthorId(authorName: string): string {
   if (lower.includes('offsec') || lower.includes('research') || lower.includes('desk') || lower.includes('group')) {
     return 'offsec';
   }
+  if (lower.includes('rahul') || lower.includes('adhikari')) {
+    return 'rahul';
+  }
   return lower.replace(/[^a-z0-9]/g, '_');
+}
+
+export function resolveAssetUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  
+  const cleanUrl = url.startsWith('/') ? url : '/' + url;
+  const pathname = window.location.pathname;
+  const pathParts = pathname.split('/').filter(Boolean);
+  const isGitHubPages = window.location.hostname.endsWith('github.io') || 
+                        (!['localhost', '127.0.0.1'].includes(window.location.hostname) && 
+                         !window.location.hostname.includes('.run.app') && 
+                         pathParts.length > 0);
+                         
+  if (isGitHubPages && pathParts.length > 0) {
+    const base = '/' + pathParts[0];
+    if (cleanUrl.startsWith(base)) {
+      return cleanUrl;
+    }
+    return `${base}${cleanUrl}`;
+  }
+  
+  return cleanUrl;
+}
+
+function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: string | null, dossierId: string | null } {
+  const hash = window.location.hash;
+  let category = 'all';
+
+  // 1. Resolve category from Hash first
+  if (hash) {
+    const lowerHash = hash.toLowerCase();
+    if (lowerHash.includes('/research')) category = 'research';
+    else if (lowerHash.includes('/security')) category = 'security';
+    else if (lowerHash.includes('/malwarere')) category = 'malwarere';
+  }
+
+  // 2. Fallback to standard Path
+  if (category === 'all') {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('/research')) category = 'research';
+    else if (path.includes('/security')) category = 'security';
+    else if (path.includes('/malwarere')) category = 'malwarere';
+  }
+
+  // 3. Fallback to search parameters
+  const searchStr = window.location.search || (hash.includes('?') ? '?' + hash.split('?')[1] : '');
+  const params = new URLSearchParams(searchStr);
+  if (category === 'all') {
+    const catParam = params.get('category');
+    if (catParam) {
+      const normCat = catParam.toLowerCase();
+      if (['research', 'security', 'malwarere'].includes(normCat)) {
+        category = normCat;
+      }
+    }
+  }
+
+  // 4. Resolve post ID
+  let postId: string | null = null;
+  const postSlug = params.get('post') || params.get('p');
+  if (postSlug && posts.length > 0) {
+    const match = posts.find(p => p.slug === postSlug || p.id === postSlug);
+    if (match) {
+      postId = match.id;
+    }
+  }
+
+  // 5. Resolve dossier / author browsing state
+  let dossierId: string | null = null;
+  const dossierSlug = params.get('dossier') || params.get('author') || params.get('researcher');
+  if (dossierSlug) {
+    dossierId = dossierSlug;
+  }
+
+  return { category, postId, dossierId };
 }
 
 
 export default function App() {
+  const isFirstSync = React.useRef(true);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('darkMode');
     if (saved !== null) {
@@ -818,28 +912,54 @@ export default function App() {
   // Handle initial deep linking once posts are loaded
   useEffect(() => {
     if (posts.length === 0) return;
-    const hash = window.location.hash;
-    const searchStr = window.location.search || (hash.includes('?') ? '?' + hash.split('?')[1] : '');
-    const params = new URLSearchParams(searchStr);
-    const postSlug = params.get('post') || params.get('p');
-    if (postSlug) {
-      const match = posts.find(p => p.slug === postSlug || p.id === postSlug);
-      if (match) {
-        setSelectedPostId(match.id);
-      }
-    } else if (!window.location.hash && !window.location.search) {
-      setSelectedPostId(null);
+    const { category, postId, dossierId } = parseStateFromUrl(posts);
+    if (postId) {
+      setSelectedPostId(postId);
     }
+    if (category !== 'all') {
+      setSelectedCategory(category);
+    }
+    if (dossierId) {
+      setShowDossier(true);
+      setDossierSelectedResearcherId(dossierId);
+    } else {
+      setShowDossier(false);
+    }
+  }, [posts]);
+
+  // Handle browser back/forward navigation (popstate)
+  useEffect(() => {
+    if (posts.length === 0) return;
+    const handlePopState = () => {
+      const { category, postId, dossierId } = parseStateFromUrl(posts);
+      setSelectedCategory(category);
+      setSelectedPostId(postId);
+      if (dossierId) {
+        setShowDossier(true);
+        setDossierSelectedResearcherId(dossierId);
+      } else {
+        setShowDossier(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [posts]);
 
   // Synchronize category/post selection to URL pathname/hash & search parameters
   useEffect(() => {
     if (loading) return;
     
+    // Detect if running under a static GitHub Pages environment
+    // Standard checks: is hostname "*.github.io"? Or is the current path nested (repo subpath)?
     const isGitHubPages = window.location.hostname.endsWith('github.io') || 
                           window.location.pathname.split('/').filter(Boolean).length > 1;
 
+    let targetAbsoluteUrl = '';
+
     if (isGitHubPages) {
+      // Use hash routing to preserve repo subpaths and support refreshing on static hosts
       let hashPath = '#/';
       const params = new URLSearchParams();
       
@@ -853,20 +973,21 @@ export default function App() {
         if (post) {
           params.set('post', post.slug);
         }
+      }
+
+      if (showDossier && dossierSelectedResearcherId) {
+        params.set('dossier', dossierSelectedResearcherId);
       } else {
-        params.delete('post');
-        params.delete('p');
+        params.delete('dossier');
       }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
-      const nextUrl = `${window.location.pathname}${hashPath}${queryStr}`;
-      if (window.location.pathname + window.location.search + window.location.hash !== nextUrl) {
-        window.history.pushState(null, '', nextUrl);
-      }
+      targetAbsoluteUrl = `${window.location.origin}${window.location.pathname}${hashPath}${queryStr}`;
     } else {
+      // Use pathname routing for local Express full-stack dev and custom domain deploys
       let path = '/';
       const params = new URLSearchParams(window.location.search);
-      params.delete('category');
+      params.delete('category'); // Strip 'category' search param if path exists, to prevent duplicate path /security?category=security
       
       if (selectedCategory !== 'all') {
         const categoryPath = selectedCategory === 'malwarere' ? 'MalwareRE' : selectedCategory;
@@ -882,14 +1003,29 @@ export default function App() {
         params.delete('post');
         params.delete('p');
       }
+
+      if (showDossier && dossierSelectedResearcherId) {
+        params.set('dossier', dossierSelectedResearcherId);
+      } else {
+        params.delete('dossier');
+      }
       
       const queryStr = params.toString() ? `?${params.toString()}` : '';
-      const nextUrl = `${window.location.origin}${path}${queryStr}`;
-      if (window.location.href !== nextUrl) {
-        window.history.pushState(null, '', nextUrl);
-      }
+      targetAbsoluteUrl = `${window.location.origin}${path}${queryStr}`;
     }
-  }, [selectedCategory, selectedPostId, loading, posts]);
+
+    const currentUrl = window.location.href;
+    if (currentUrl !== targetAbsoluteUrl) {
+      if (isFirstSync.current) {
+        window.history.replaceState(null, '', targetAbsoluteUrl);
+        isFirstSync.current = false;
+      } else {
+        window.history.pushState(null, '', targetAbsoluteUrl);
+      }
+    } else {
+      isFirstSync.current = false;
+    }
+  }, [selectedCategory, selectedPostId, showDossier, dossierSelectedResearcherId, loading, posts]);
 
   // Sync scroll progress on post reader
   useEffect(() => {
@@ -1104,6 +1240,64 @@ export default function App() {
 
                   {/* Dynamic Page Layout Renderer */}
                   {(() => {
+                    const renderAuthorMeta = (post: BlogPost, isCentered: boolean = false) => {
+                      const btnClass = "hover:text-rose-500 hover:underline transition-colors focus:outline-none font-bold text-slate-700 dark:text-slate-300";
+                      const wrapperClass = isCentered ? "flex flex-wrap justify-center items-center gap-1 text-slate-400 font-semibold" : "flex flex-wrap items-center gap-1 text-slate-400 font-semibold";
+                      
+                      return (
+                        <span className={wrapperClass}>
+                          <span>By</span>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPostId(null);
+                              setDossierSelectedResearcherId(getAuthorId(post.author));
+                              setShowDossier(true);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={btnClass}
+                          >
+                            {getAuthorDisplay(post.author, post)}
+                          </button>
+                          {post.coAuthor && (
+                            <>
+                              <span className="mx-0.5 text-slate-400">&</span>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedPostId(null);
+                                  setDossierSelectedResearcherId(getAuthorId(post.coAuthor!));
+                                  setShowDossier(true);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={btnClass}
+                              >
+                                {getAuthorDisplay(post.coAuthor, post)}
+                              </button>
+                            </>
+                          )}
+                          {post.reviewer && (
+                            <span className="text-slate-400 font-normal ml-1">
+                              (Reviewed by:{' '}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedPostId(null);
+                                  setDossierSelectedResearcherId(getAuthorId(post.reviewer!));
+                                  setShowDossier(true);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={`${btnClass} text-slate-500 dark:text-slate-300 font-semibold`}
+                              >
+                                {getAuthorDisplay(post.reviewer, post)}
+                              </button>
+                              )
+                            </span>
+                          )}
+                        </span>
+                      );
+                    };
+
                     switch (layout) {
                       case 'frosted-glass':
                         return (
@@ -1118,21 +1312,7 @@ export default function App() {
                                     {activePost.title}
                                   </h1>
                                   <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-semibold font-sans">
-                                    <span className="flex items-center gap-1">
-                                      By 
-                                      <button 
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setSelectedPostId(null);
-                                          setDossierSelectedResearcherId(getAuthorId(activePost.author));
-                                          setShowDossier(true);
-                                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                        className="hover:text-rose-500 hover:underline transition-colors focus:outline-none font-bold"
-                                      >
-                                        {getAuthorDisplay(activePost.author, activePost)}
-                                      </button>
-                                    </span>
+                                    {renderAuthorMeta(activePost)}
                                     <span>•</span>
                                     <span>{activePost.date}</span>
                                     <span>•</span>
@@ -1140,10 +1320,22 @@ export default function App() {
                                   </div>
                                 </div>
 
-                                {activePost.bannerImage && (
-                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner">
-                                    <img src={activePost.bannerImage} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                  </div>
+                                {activePost.showBanner !== false && (
+                                  activePost.bannerImage ? (
+                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                      <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                    </div>
+                                  ) : (
+                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                      <ThemeBannerFallback 
+                                        themeColor={activePost.themeColor} 
+                                        category={activePost.category} 
+                                        title={activePost.title} 
+                                        isDark={darkMode}
+                                        className="h-full rounded-xl"
+                                      />
+                                    </div>
+                                  )
                                 )}
 
                                 {activePost.summary && activePost.showAbstract !== false && (
@@ -1202,20 +1394,7 @@ export default function App() {
                                 {activePost.title}
                               </h1>
                               <div className="flex justify-center items-center gap-4 text-xs font-sans text-slate-400 font-mono tracking-wider">
-                                <span>
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedPostId(null);
-                                      setDossierSelectedResearcherId(getAuthorId(activePost.author));
-                                      setShowDossier(true);
-                                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    className="hover:text-rose-500 hover:underline transition-colors focus:outline-none font-bold"
-                                  >
-                                    {getAuthorDisplay(activePost.author, activePost)}
-                                  </button>
-                                </span>
+                                {renderAuthorMeta(activePost, true)}
                                 <span>—</span>
                                 <span>{activePost.date}</span>
                                 <span>—</span>
@@ -1227,10 +1406,22 @@ export default function App() {
                               <ImpactLevelRibbon level={activePost.impactLevel} />
                             )}
 
-                            {activePost.bannerImage && (
-                              <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <img src={activePost.bannerImage} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                              </div>
+                            {activePost.showBanner !== false && (
+                              activePost.bannerImage ? (
+                                <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
+                                  <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                </div>
+                              ) : (
+                                <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
+                                  <ThemeBannerFallback 
+                                    themeColor={activePost.themeColor} 
+                                    category={activePost.category} 
+                                    title={activePost.title} 
+                                    isDark={darkMode}
+                                    className="h-full rounded-xl"
+                                  />
+                                </div>
+                              )
                             )}
 
                             {activePost.summary && (
@@ -1278,19 +1469,10 @@ export default function App() {
                                 </h1>
                         
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-mono font-medium pt-1">
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedPostId(null);
-                                      setDossierSelectedResearcherId(getAuthorId(activePost.author));
-                                      setShowDossier(true);
-                                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    className="flex items-center gap-1.5 hover:text-rose-500 hover:underline transition-colors focus:outline-none text-left"
-                                  >
+                                  <div className="flex items-center gap-1.5">
                                     <User size={13} className="text-slate-400" />
-                                    <span>{getAuthorDisplay(activePost.author, activePost)}</span>
-                                  </button>
+                                    {renderAuthorMeta(activePost)}
+                                  </div>
                                   <span className="flex items-center gap-1.5">
                                     <Calendar size={13} className="text-slate-400" />
                                     {activePost.date}
@@ -1302,10 +1484,22 @@ export default function App() {
                                 </div>
                               </div>
                         
-                              {activePost.bannerImage && (
-                                <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800">
-                                  <img src={activePost.bannerImage} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                </div>
+                              {activePost.showBanner !== false && (
+                                activePost.bannerImage ? (
+                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                    <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  </div>
+                                ) : (
+                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                    <ThemeBannerFallback 
+                                      themeColor={activePost.themeColor} 
+                                      category={activePost.category} 
+                                      title={activePost.title} 
+                                      isDark={darkMode}
+                                      className="h-full rounded-xl"
+                                    />
+                                  </div>
+                                )
                               )}
                         
                               {activePost.summary && activePost.showAbstract !== false && (
@@ -1546,9 +1740,19 @@ export default function App() {
                             darkMode ? 'bg-[#0d1321] border-slate-800/80 hover:border-slate-700/80' : 'bg-white border-slate-200 hover:border-slate-300'
                           }`}
                         >
-                          {post.bannerImage && (
+                          {post.bannerImage ? (
                             <div className="aspect-[21/9] w-full overflow-hidden border-b border-slate-200 dark:border-slate-800">
-                              <img src={post.bannerImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" referrerPolicy="no-referrer" />
+                              <img src={resolveAssetUrl(post.bannerImage)} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" referrerPolicy="no-referrer" />
+                            </div>
+                          ) : (
+                            <div className="aspect-[21/9] w-full overflow-hidden border-b border-slate-200 dark:border-slate-800">
+                              <ThemeBannerFallback 
+                                themeColor={post.themeColor} 
+                                category={post.category} 
+                                title={post.title} 
+                                isDark={darkMode}
+                                className="h-full rounded-none"
+                              />
                             </div>
                           )}
 
