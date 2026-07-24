@@ -23,8 +23,55 @@ if (!fs.existsSync(BLOG_ASSETS_DIR)) {
 // Middleware to parse JSON
 app.use(express.json({ limit: '15mb' }));
 
-// Serve static blog assets
-app.use("/blog-assets", express.static(BLOG_ASSETS_DIR));
+function resolveAssetFile(baseDir: string, relPath: string): string | null {
+  const directPath = path.join(baseDir, relPath);
+  if (fs.existsSync(directPath) && fs.statSync(directPath).isFile()) {
+    return directPath;
+  }
+
+  const cleanRel = relPath.replace(/^[/\\]+/, '');
+  const pathParts = cleanRel.split(/[/\\]+/).filter(Boolean);
+  if (pathParts.length === 0) return null;
+
+  function search(dir: string): string | null {
+    if (!fs.existsSync(dir)) return null;
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isFile()) {
+        const normFull = fullPath.replace(/\\/g, '/');
+        const normRel = cleanRel.replace(/\\/g, '/');
+        if (normFull.endsWith(normRel)) {
+          return fullPath;
+        }
+        if (pathParts.length >= 2) {
+          const expectedEnd = `${pathParts[pathParts.length - 2]}/${pathParts[pathParts.length - 1]}`;
+          if (normFull.endsWith(expectedEnd)) {
+            return fullPath;
+          }
+        }
+      } else if (entry.isDirectory()) {
+        const res = search(fullPath);
+        if (res) return res;
+      }
+    }
+    return null;
+  }
+
+  return search(baseDir);
+}
+
+// Serve static blog assets with dynamic recursive fallback
+app.use("/blog-assets", (req, res, next) => {
+  const reqUrl = req.url || '';
+  const cleanPath = reqUrl.split('?')[0];
+  const filePath = resolveAssetFile(BLOG_ASSETS_DIR, cleanPath);
+  if (filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    res.sendFile(filePath);
+  } else {
+    next();
+  }
+});
 
 // Helper to load posts
 function loadPosts(): BlogPost[] {
