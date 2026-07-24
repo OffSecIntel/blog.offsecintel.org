@@ -1,6 +1,6 @@
 # OffSecIntel - System Architecture & Developer Documentation
 
-Welcome to the **OffSecIntel Security Publications Portal** developer guide. This document details the architectural blueprint, data structures, backend APIs, and step-by-step instructions for upgrading this platform to a fully dynamic enterprise database backend.
+Welcome to the **OffSecIntel Security Publications Portal** developer guide. For the high-level system blueprint, taxonomy registry, SEO engine, and framework abstraction rules, see [ARCHITECTURE.md](file:///a:/Git/GitHub/OSI/frontend/blog.offsecintel.org/ARCHITECTURE.md).
 
 ---
 

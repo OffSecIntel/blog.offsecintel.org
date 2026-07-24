@@ -9,7 +9,9 @@ import { MarkdownRenderer } from './components/MarkdownRenderer';
 import { getThemeColorClasses } from './theme';
 import { ThreatIntelPanel } from './components/ThreatIntelPanel';
 import { ArticleAssetsWidget } from './components/ArticleAssetsWidget';
-import { PORTAL_CONFIG, NAVIGATION_MENU, CATEGORIES_CONFIG } from './config';
+import { PORTAL_CONFIG, TAXONOMY_NODES, NAVIGATION_CONFIG } from './config';
+import { TaxonomyRegistry } from './services/taxonomy/registry';
+import { NavDropdown } from './components/NavDropdown';
 import { 
   Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye, 
   Globe, Activity, AlertTriangle, ExternalLink, Lock, RefreshCw, Layers, Terminal,
@@ -18,6 +20,14 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
 import { ThemeBannerFallback } from './components/ThemeBannerFallback';
+import { MetaManager } from './services/seo/metaManager';
+
+const taxonomy = new TaxonomyRegistry(TAXONOMY_NODES);
+try {
+  taxonomy.validateIntegrity();
+} catch (err) {
+  console.warn("Taxonomy Integrity Check:", err);
+}
 
 // ----------------------------------------------------------------------
 // Hugo / Jekyll Style Static Markdown Loading Engine
@@ -159,7 +169,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
 }
 
 export function loadStaticMarkdownPosts(): BlogPost[] {
-  const modules = (import.meta as any).glob('./posts/*.md', { query: '?raw', eager: true }) as Record<string, any>;
+  const modules = (import.meta as any).glob('./posts/**/*.md', { query: '?raw', eager: true }) as Record<string, any>;
   const parsedPosts: BlogPost[] = [];
   
   for (const path in modules) {
@@ -231,7 +241,7 @@ export function parseAuthorProfile(filename: string, fileContent: string): Autho
 }
 
 export function loadStaticAuthorProfiles(): AuthorProfile[] {
-  const modules = (import.meta as any).glob('./authors/*.md', { query: '?raw', eager: true }) as Record<string, any>;
+  const modules = (import.meta as any).glob('./authors/**/*.md', { query: '?raw', eager: true }) as Record<string, any>;
   const parsedProfiles: AuthorProfile[] = [];
   
   for (const path in modules) {
@@ -769,18 +779,16 @@ function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: strin
 
   // 1. Resolve category from Hash first
   if (hash) {
-    const lowerHash = hash.toLowerCase();
-    if (lowerHash.includes('/research')) category = 'research';
-    else if (lowerHash.includes('/security')) category = 'security';
-    else if (lowerHash.includes('/malwarere')) category = 'malwarere';
+    const hashClean = hash.replace(/^#\/?/, '').split('?')[0];
+    const resolved = taxonomy.resolveFromUrlPath(hashClean);
+    if (resolved) category = resolved.slug;
   }
 
   // 2. Fallback to standard Path
   if (category === 'all') {
-    const path = window.location.pathname.toLowerCase();
-    if (path.includes('/research')) category = 'research';
-    else if (path.includes('/security')) category = 'security';
-    else if (path.includes('/malwarere')) category = 'malwarere';
+    const pathClean = window.location.pathname;
+    const resolved = taxonomy.resolveFromUrlPath(pathClean);
+    if (resolved) category = resolved.slug;
   }
 
   // 3. Fallback to search parameters
@@ -789,10 +797,8 @@ function parseStateFromUrl(posts: BlogPost[]): { category: string, postId: strin
   if (category === 'all') {
     const catParam = params.get('category');
     if (catParam) {
-      const normCat = catParam.toLowerCase();
-      if (['research', 'security', 'malwarere'].includes(normCat)) {
-        category = normCat;
-      }
+      const canonical = taxonomy.canonicalize(catParam);
+      if (canonical) category = canonical;
     }
   }
 
@@ -837,30 +843,26 @@ export default function App() {
   const [activePostPageIndex, setActivePostPageIndex] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
-    // 1. Check Hash first (for GitHub Pages static routing compatibility)
+    // 1. Check Hash first
     const hash = window.location.hash;
     if (hash) {
-      const lowerHash = hash.toLowerCase();
-      if (lowerHash.includes('/research')) return 'research';
-      if (lowerHash.includes('/security')) return 'security';
-      if (lowerHash.includes('/malwarere')) return 'malwarere';
+      const hashClean = hash.replace(/^#\/?/, '').split('?')[0];
+      const resolved = taxonomy.resolveFromUrlPath(hashClean);
+      if (resolved) return resolved.slug;
     }
 
     // 2. Fallback to standard Path
-    const path = window.location.pathname.toLowerCase();
-    if (path.includes('/research')) return 'research';
-    if (path.includes('/security')) return 'security';
-    if (path.includes('/malwarere')) return 'malwarere';
-    
+    const pathClean = window.location.pathname;
+    const resolved = taxonomy.resolveFromUrlPath(pathClean);
+    if (resolved) return resolved.slug;
+
     // 3. Fallback to search parameters
     const searchStr = window.location.search || (hash.includes('?') ? '?' + hash.split('?')[1] : '');
     const params = new URLSearchParams(searchStr);
     const catParam = params.get('category');
     if (catParam) {
-      const normCat = catParam.toLowerCase();
-      if (['research', 'security', 'malwarere'].includes(normCat)) {
-        return normCat;
-      }
+      const canonical = taxonomy.canonicalize(catParam);
+      if (canonical) return canonical;
     }
     return 'all';
   });
@@ -961,7 +963,7 @@ export default function App() {
       const params = new URLSearchParams();
       
       if (selectedCategory !== 'all') {
-        const categoryPath = selectedCategory === 'malwarere' ? 'MalwareRE' : selectedCategory;
+        const categoryPath = taxonomy.buildUrlPath(selectedCategory).replace(/^\//, '');
         hashPath = `#/${categoryPath}`;
       }
       
@@ -984,11 +986,10 @@ export default function App() {
       // Use pathname routing for local Express full-stack dev and custom domain deploys
       let path = '/';
       const params = new URLSearchParams(window.location.search);
-      params.delete('category'); // Strip 'category' search param if path exists, to prevent duplicate path /security?category=security
+      params.delete('category'); // Strip 'category' search param if path exists
       
       if (selectedCategory !== 'all') {
-        const categoryPath = selectedCategory === 'malwarere' ? 'MalwareRE' : selectedCategory;
-        path = `/${categoryPath}`;
+        path = taxonomy.buildUrlPath(selectedCategory);
       }
       
       if (selectedPostId) {
@@ -1024,6 +1025,46 @@ export default function App() {
     }
   }, [selectedCategory, selectedPostId, showDossier, dossierSelectedResearcherId, loading, posts]);
 
+  // Synchronize SEO & Open Graph meta tags for WhatsApp / Social Media sharing
+  useEffect(() => {
+    if (loading) return;
+
+    if (showDossier && dossierSelectedResearcherId) {
+      const author = authors.find(a => a.id === dossierSelectedResearcherId);
+      MetaManager.updateMeta({
+        title: author ? `${author.name} (${author.alias || author.role})` : 'Research Contributors',
+        description: author ? author.bio : 'Security specialists and reverse engineers at OffSecIntel.',
+        type: 'website'
+      });
+      return;
+    }
+
+    if (selectedPostId) {
+      const post = posts.find(p => p.id === selectedPostId);
+      if (post) {
+        MetaManager.updateMeta({
+          title: post.title,
+          description: post.summary,
+          image: post.bannerImage,
+          type: 'article'
+        });
+        return;
+      }
+    }
+
+    if (selectedCategory !== 'all') {
+      const catInfo = taxonomy.resolve(selectedCategory);
+      MetaManager.updateMeta({
+        title: catInfo ? catInfo.label : `${selectedCategory.toUpperCase()} Publications`,
+        description: catInfo ? catInfo.description : 'Security advisories and publications.',
+        type: 'website'
+      });
+      return;
+    }
+
+    MetaManager.updateMeta();
+  }, [selectedPostId, showDossier, dossierSelectedResearcherId, selectedCategory, loading, posts, authors]);
+
   // Sync scroll progress on post reader
   useEffect(() => {
     const handleScroll = () => {
@@ -1039,7 +1080,7 @@ export default function App() {
 
   // Filter posts based on category, subcategory and search query
   const filteredPosts = posts.filter(post => {
-    const matchesCategory = selectedCategory === 'all' || post.category.toLowerCase() === selectedCategory;
+    const matchesCategory = taxonomy.matchesFilter(post.category, selectedCategory);
     
     // Check subcategory matches within Content/Summary if a subcategory is selected
     const matchesSubcategory = !selectedSubcategory || 
@@ -1063,7 +1104,7 @@ export default function App() {
   const activePost = posts.find(p => p.id === selectedPostId);
 
   // Active category detail information (from configuration)
-  const activeCategoryInfo = CATEGORIES_CONFIG.find(c => c.id === selectedCategory);
+  const activeCategoryInfo = taxonomy.resolve(selectedCategory);
 
   // Stats summaries
   const criticalThreatsCount = posts.filter(p => p.threatIntel?.severity === 'critical' || p.threatIntel?.severity === 'high').length;
@@ -1087,41 +1128,25 @@ export default function App() {
 
           {/* Configuration-driven Navigation Menus */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-mono font-medium">
-            {NAVIGATION_MENU.map((item, index) => {
-              if (item.type === 'filter') {
-                const isActive = selectedCategory === item.value && !selectedPostId && !showDossier;
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
+            {NAVIGATION_CONFIG.filter(item => item.visible).map((item, index) => {
+              const isActive = taxonomy.matchesFilter(selectedCategory, item.target) && !selectedPostId && !showDossier;
+              return (
+                <NavDropdown
+                  key={index}
+                  item={item}
+                  isActive={isActive}
+                  onSelect={(target, action) => {
+                    if (action === 'filter') {
                       setSelectedPostId(null);
-                      setSelectedCategory(item.value);
+                      setSelectedCategory(target);
                       setSelectedSubcategory(null);
                       setShowDossier(false);
-                    }}
-                    className={`transition-colors py-1 ${
-                      isActive 
-                        ? 'text-rose-500 border-b-2 border-rose-500 font-bold' 
-                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              } else {
-                return (
-                  <a
-                    key={index}
-                    href={item.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
-                  >
-                    <span>{item.label}</span>
-                    <ExternalLink size={10} />
-                  </a>
-                );
-              }
+                    } else {
+                      window.open(target, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                />
+              );
             })}
           </nav>
 
@@ -1626,20 +1651,22 @@ export default function App() {
                       </span>
                     </button>
 
-                    {CATEGORIES_CONFIG.map((cat, idx) => {
-                      const isActive = selectedCategory === cat.id;
-                      const count = posts.filter(p => p.category.toLowerCase() === cat.id).length;
+                    {taxonomy.getVisibleChildren('security').concat(
+                      taxonomy.getVisibleChildren('security').flatMap(p => taxonomy.getVisibleChildren(p.slug))
+                    ).map((node, idx) => {
+                      const isActive = selectedCategory === node.slug;
+                      const count = posts.filter(p => taxonomy.matchesFilter(p.category, node.slug)).length;
                       return (
                         <button
                           key={idx}
-                          onClick={() => { setSelectedCategory(cat.id); setSelectedSubcategory(null); }}
+                          onClick={() => { setSelectedCategory(node.slug); setSelectedSubcategory(null); }}
                           className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
                             isActive 
                               ? 'bg-rose-500 text-white font-semibold shadow-sm' 
                               : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
                           }`}
                         >
-                          <span>/{cat.id}</span>
+                          <span>/{node.slug}</span>
                           <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                             {count}
                           </span>
@@ -1650,7 +1677,7 @@ export default function App() {
                 </div>
 
                 {/* Dynamic Subcategories index panel - optimized horizontal layout */}
-                {activeCategoryInfo && activeCategoryInfo.subcategories && (
+                {activeCategoryInfo && (
                   <div className="bg-white dark:bg-[#0d1321] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4 animate-fade-in">
                     <div className="flex items-center gap-2 px-1 py-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">
                       <Terminal size={13} className="text-rose-500" />
@@ -1667,19 +1694,19 @@ export default function App() {
                       >
                         Show All
                       </button>
-                      {activeCategoryInfo.subcategories.map((sub, i) => {
-                        const isSubActive = selectedSubcategory === sub;
+                      {taxonomy.getVisibleChildren(activeCategoryInfo.slug).map((sub, i) => {
+                        const isSubActive = selectedCategory === sub.slug;
                         return (
                           <button
                             key={i}
-                            onClick={() => setSelectedSubcategory(isSubActive ? null : sub)}
+                            onClick={() => { setSelectedCategory(sub.slug); setSelectedSubcategory(null); }}
                             className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
                               isSubActive
                                 ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
                                 : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                           >
-                            {sub}
+                            {sub.label}
                           </button>
                         );
                       })}
