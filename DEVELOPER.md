@@ -36,6 +36,9 @@ graph TD
 ### Development Architecture
 In development, Express acts as the primary host. The Vite development server is mounted as an internal middleware inside Express. This provides rapid feedback, live hot module reloading (HMR) for client assets, and instant API responses from the same port (`3000`).
 
+### Framework-Agnostic Service Core
+While React 19 is currently used for client UI rendering, all core business logic (`TaxonomyRegistry`, `MetaManager`, `MarkdownParser`) is built in **100% Pure Vanilla TypeScript with zero React dependencies**. This enables extracting the business logic into a zero-JS static site compiler in the future without rewriting core services.
+
 ### Production Architecture
 During compilation (`npm run build`):
 1. The **React SPA client** is compiled into optimized HTML, JS, and CSS inside `/dist`.

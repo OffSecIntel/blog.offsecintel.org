@@ -104,7 +104,21 @@ Theme styling and vector pattern selection resolve in the following priority ord
 
 ---
 
-## 5. Standard Developer Workflow & Commands
+## 5. Collections & Collapsible Left-Hand Sidebar TOC
+
+### Taxonomy (Category/Subcategory) vs. Collections Separation
+
+| Component | Responsibility | Scope | Render Location |
+|---|---|---|---|
+| **Taxonomy (`category` / `subcategory`)** | Structural classification, clean URLs (`/research/malware-re`), search filtering | Catalog & Search Grid | Top Filter Bar & Breadcrumbs |
+| **Collections (`collection`)** | Multi-part reading paths & structured chapter outlines | Article Reader View | **Left-Hand Collapsible Sidebar TOC** |
+
+1. **Category / Subcategory**: Controls repository grid navigation, URL routing, and search filters. Subcategories do NOT build a left sidebar on the article reader view.
+2. **Collection**: Controls the **Collapsible Left-Hand Sidebar TOC** on the Article Reader View (`collection: android-il2cpp-series`). If an article does not belong to a collection, no left sidebar is rendered (clean full-width layout).
+
+---
+
+## 6. Standard Developer Workflow & Commands
 
 ```bash
 # Type-check TypeScript code (0 errors required)
