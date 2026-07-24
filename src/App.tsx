@@ -1631,10 +1631,11 @@ export default function App() {
                   <div className="flex flex-wrap gap-2 text-xs font-mono">
                     <button
                       onClick={() => { setSelectedCategory('all'); setSelectedSubcategory(null); }}
-                      className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${selectedCategory === 'all'
-                          ? 'bg-rose-500 text-white font-semibold shadow-sm'
+                      className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
+                        selectedCategory === 'all' 
+                          ? 'bg-rose-500 text-white font-semibold shadow-sm' 
                           : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
-                        }`}
+                      }`}
                     >
                       <span>/* (ALL)</span>
                       <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
@@ -1642,21 +1643,21 @@ export default function App() {
                       </span>
                     </button>
 
-                    {taxonomy.getVisibleChildren('security').concat(
-                      taxonomy.getVisibleChildren('security').flatMap(p => taxonomy.getVisibleChildren(p.slug))
-                    ).map((node, idx) => {
-                      const isActive = selectedCategory === node.slug;
-                      const count = posts.filter(p => taxonomy.matchesFilter(p.category, node.slug)).length;
+                    {/* Level-1 Pillars Only */}
+                    {taxonomy.getVisibleChildren('security').map((pillar, idx) => {
+                      const isActive = selectedCategory === pillar.slug || (activeCategoryInfo?.parentSlug === pillar.slug);
+                      const count = posts.filter(p => taxonomy.matchesFilter(p.category, pillar.slug)).length;
                       return (
                         <button
                           key={idx}
-                          onClick={() => { setSelectedCategory(node.slug); setSelectedSubcategory(null); }}
-                          className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${isActive
-                              ? 'bg-rose-500 text-white font-semibold shadow-sm'
+                          onClick={() => { setSelectedCategory(pillar.slug); setSelectedSubcategory(null); }}
+                          className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
+                            isActive 
+                              ? 'bg-rose-500 text-white font-semibold shadow-sm' 
                               : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
-                            }`}
+                          }`}
                         >
-                          <span>/{node.slug}</span>
+                          <span>/{pillar.slug}</span>
                           <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                             {count}
                           </span>
@@ -1666,41 +1667,67 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Dynamic Subcategories index panel - optimized horizontal layout */}
-                {activeCategoryInfo && (
-                  <div className="bg-white dark:bg-[#0d1321] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4 animate-fade-in">
-                    <div className="flex items-center gap-2 px-1 py-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                      <Terminal size={13} className="text-rose-500" />
-                      <span>Subcategory Indices:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        onClick={() => setSelectedSubcategory(null)}
-                        className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${selectedSubcategory === null
-                            ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
-                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                {/* Dynamic Level-2 Subcategories index panel */}
+                {(() => {
+                  // Determine subcategories to show: if pillar selected, show its children. If leaf selected, show sibling leaves. If 'all', show all leaves.
+                  const parentPillarSlug = activeCategoryInfo?.tier === 'pillar' 
+                    ? activeCategoryInfo.slug 
+                    : activeCategoryInfo?.parentSlug && activeCategoryInfo.parentSlug !== 'security' 
+                    ? activeCategoryInfo.parentSlug 
+                    : null;
+
+                  const subcategoriesToShow = parentPillarSlug 
+                    ? taxonomy.getVisibleChildren(parentPillarSlug) 
+                    : taxonomy.getVisibleChildren('security').flatMap(p => taxonomy.getVisibleChildren(p.slug));
+
+                  if (subcategoriesToShow.length === 0) return null;
+
+                  return (
+                    <div className="bg-white dark:bg-[#0d1321] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4 animate-fade-in">
+                      <div className="flex items-center gap-2 px-1 py-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                        <Terminal size={13} className="text-rose-500" />
+                        <span>Subcategory Indices:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          onClick={() => {
+                            if (parentPillarSlug) {
+                              setSelectedCategory(parentPillarSlug);
+                            } else {
+                              setSelectedCategory('all');
+                            }
+                            setSelectedSubcategory(null);
+                          }}
+                          className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
+                            activeCategoryInfo?.tier === 'pillar' || selectedCategory === 'all'
+                              ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
+                              : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                           }`}
-                      >
-                        Show All
-                      </button>
-                      {taxonomy.getVisibleChildren(activeCategoryInfo.slug).map((sub, i) => {
-                        const isSubActive = selectedCategory === sub.slug;
-                        return (
-                          <button
-                            key={i}
-                            onClick={() => { setSelectedCategory(sub.slug); setSelectedSubcategory(null); }}
-                            className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${isSubActive
-                                ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
-                                : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        >
+                          Show All {parentPillarSlug ? `(${parentPillarSlug.toUpperCase()})` : ''}
+                        </button>
+                        {subcategoriesToShow.map((sub, i) => {
+                          const isSubActive = selectedCategory === sub.slug;
+                          const count = posts.filter(p => taxonomy.matchesFilter(p.category, sub.slug)).length;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => { setSelectedCategory(sub.slug); setSelectedSubcategory(null); }}
+                              className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors flex items-center gap-1.5 ${
+                                isSubActive
+                                  ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
+                                  : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                               }`}
-                          >
-                            {sub.label}
-                          </button>
-                        );
-                      })}
+                            >
+                              <span>{sub.label}</span>
+                              <span className="opacity-60 text-[9px]">({count})</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Main Content: Publications listings list */}
                 <div className="space-y-6">
