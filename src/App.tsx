@@ -9,9 +9,10 @@ import { MarkdownRenderer } from './components/MarkdownRenderer';
 import { getThemeColorClasses } from './theme';
 import { ThreatIntelPanel } from './components/ThreatIntelPanel';
 import { ArticleAssetsWidget } from './components/ArticleAssetsWidget';
-import { PORTAL_CONFIG, TAXONOMY_NODES, NAVIGATION_CONFIG } from './config';
+import { PORTAL_CONFIG, TAXONOMY_NODES, NAVIGATION_CONFIG, COLLECTIONS_CONFIG } from './config';
 import { TaxonomyRegistry } from './services/taxonomy/registry';
 import { NavDropdown } from './components/NavDropdown';
+import { CollectionSidebar } from './components/CollectionSidebar';
 import {
   Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye,
   Globe, Activity, AlertTriangle, ExternalLink, Lock, RefreshCw, Layers, Terminal,
@@ -90,6 +91,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const impactLevel = (frontmatter.impactLevel as BlogPost['impactLevel']) || undefined;
   const coAuthor = frontmatter.coAuthor || undefined;
   const reviewer = frontmatter.reviewer || undefined;
+  const collection = frontmatter.collection || undefined;
 
   // Reconstruct threatIntel fields
   let threatIntel: any = undefined;
@@ -164,6 +166,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
     impactLevel,
     coAuthor,
     reviewer,
+    collection,
     threatIntel
   };
 }
@@ -1254,6 +1257,10 @@ export default function App() {
 
                   {/* Dynamic Page Layout Renderer */}
                   {(() => {
+                    const activeCollection = PORTAL_CONFIG.enableCollections && activePost.collection
+                      ? COLLECTIONS_CONFIG.find(c => c.slug === activePost.collection)
+                      : null;
+
                     const renderAuthorMeta = (post: BlogPost, isCentered: boolean = false) => {
                       const btnClass = "hover:text-rose-500 hover:underline transition-colors focus:outline-none font-bold text-slate-700 dark:text-slate-300";
                       const wrapperClass = isCentered ? "flex flex-wrap justify-center items-center gap-1 text-slate-400 font-semibold" : "flex flex-wrap items-center gap-1 text-slate-400 font-semibold";
@@ -1312,35 +1319,124 @@ export default function App() {
                       );
                     };
 
-                    switch (layout) {
-                      case 'frosted-glass':
-                        return (
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                            <div className="lg:col-span-8 space-y-6">
-                              <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 p-6 rounded-2xl shadow-lg space-y-5">
-                                <div className="space-y-3">
-                                  <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
-                                    /{activePost.category}
-                                  </span>
-                                  <h1 className="text-3xl md:text-4xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
-                                    {activePost.title}
-                                  </h1>
-                                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-semibold font-sans">
-                                    {renderAuthorMeta(activePost)}
-                                    <span>•</span>
-                                    <span>{activePost.date}</span>
-                                    <span>•</span>
-                                    <span className={themeClasses.text}>{activePost.readTime}</span>
+                    const layoutContent = (() => {
+                        switch (layout) {
+                          case 'frosted-glass':
+                            return (
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                <div className="lg:col-span-8 space-y-6">
+                                  <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 p-6 rounded-2xl shadow-lg space-y-5">
+                                    <div className="space-y-3">
+                                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
+                                        /{activePost.category}
+                                      </span>
+                                      <h1 className="text-3xl md:text-4xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
+                                        {activePost.title}
+                                      </h1>
+                                      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-semibold font-sans">
+                                        {renderAuthorMeta(activePost)}
+                                        <span>•</span>
+                                        <span>{activePost.date}</span>
+                                        <span>•</span>
+                                        <span className={themeClasses.text}>{activePost.readTime}</span>
+                                      </div>
+                                    </div>
+
+                                    {activePost.showBanner !== false && (
+                                      activePost.bannerImage ? (
+                                        <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                          <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                        </div>
+                                      ) : (
+                                        <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                          <ThemeBannerFallback
+                                            themeColor={activePost.themeColor}
+                                            category={activePost.category}
+                                            title={activePost.title}
+                                            isDark={darkMode}
+                                            className="h-full rounded-xl"
+                                          />
+                                        </div>
+                                      )
+                                    )}
+
+                                    {activePost.summary && activePost.showAbstract !== false && (
+                                      <div className="bg-white/60 dark:bg-slate-950/40 rounded-xl p-4.5 border border-slate-200/50 dark:border-slate-800 backdrop-blur-sm">
+                                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">Abstract / Executive Summary</h3>
+                                        <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-xs md:text-sm">
+                                          "{activePost.summary}"
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    <div className="py-2">
+                                      <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
+                                      <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
+                                    </div>
                                   </div>
                                 </div>
 
+                                <div className="lg:col-span-4 sticky top-24 space-y-6">
+                                  {activePost.showToc && (
+                                    <TableOfContents
+                                      content={activePost.content}
+                                      themeClasses={themeClasses}
+                                      postPages={postPages}
+                                      currentPageIndex={activePostPageIndex}
+                                      onPageChange={setActivePostPageIndex}
+                                    />
+                                  )}
+
+                                  <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+                                    <div className="flex items-center gap-2 pb-2 border-b border-white/20 dark:border-slate-800">
+                                      <Shield size={16} className={themeClasses.text} />
+                                      <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Threat Parameters</h3>
+                                    </div>
+                                    {activePost.threatIntel ? (
+                                      <ThreatIntelPanel intel={activePost.threatIntel} isSidebar={true} />
+                                    ) : (
+                                      <p className="text-xs text-slate-400 text-center py-4 font-mono">NO_INTELLIGENCE_METRICS_FOUND</p>
+                                    )}
+                                  </div>
+
+                                  <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
+
+                                  <RecentIntelWidget currentPostId={activePost.id} posts={posts} themeClasses={themeClasses} onSelectPost={setSelectedPostId} />
+                                  <ArticleIntegrityWidget content={activePost.content} />
+                                </div>
+                              </div>
+                            );
+
+                          case 'editorial':
+                            return (
+                              <div className="max-w-4xl mx-auto space-y-8 py-4 font-serif">
+                                <div className="space-y-4 text-center">
+                                  <span className="font-mono text-xs uppercase tracking-widest text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 px-3">
+                                    /{activePost.category}
+                                  </span>
+                                  <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white leading-tight font-semibold tracking-tight">
+                                    {activePost.title}
+                                  </h1>
+                                  <div className="flex justify-center items-center gap-4 text-xs font-sans text-slate-400 font-mono tracking-wider">
+                                    {renderAuthorMeta(activePost, true)}
+                                    <span>—</span>
+                                    <span>{activePost.date}</span>
+                                    <span>—</span>
+                                    <span className="font-bold text-rose-500">{activePost.readTime}</span>
+                                  </div>
+                                </div>
+
+                                {activePost.impactLevel && (
+                                  <ImpactLevelRibbon level={activePost.impactLevel} />
+                                )}
+
                                 {activePost.showBanner !== false && (
                                   activePost.bannerImage ? (
-                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
                                       <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                     </div>
                                   ) : (
-                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
+                                    <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
                                       <ThemeBannerFallback
                                         themeColor={activePost.themeColor}
                                         category={activePost.category}
@@ -1353,224 +1449,175 @@ export default function App() {
                                 )}
 
                                 {activePost.summary && activePost.showAbstract !== false && (
-                                  <div className="bg-white/60 dark:bg-slate-950/20 backdrop-blur-sm rounded-xl p-5 border border-white/20 dark:border-slate-800 shadow-sm italic text-slate-700 dark:text-slate-300">
-                                    <p className="text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider mb-1">Executive Summary / Abstract</p>
-                                    "{activePost.summary}"
+                                  <div className="bg-slate-100/50 dark:bg-slate-950/20 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+                                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">Abstract / Executive Summary</h3>
+                                    <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-sm md:text-base">
+                                      "{activePost.summary}"
+                                    </p>
                                   </div>
                                 )}
 
-                                <div className="py-2">
+                                <div className="py-4">
                                   <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
                                   <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
                                 </div>
-                              </div>
-                            </div>
 
-                            <div className="lg:col-span-4 sticky top-24 space-y-6">
-                              {activePost.showToc && (
-                                <TableOfContents
-                                  content={activePost.content}
-                                  themeClasses={themeClasses}
-                                  postPages={postPages}
-                                  currentPageIndex={activePostPageIndex}
-                                  onPageChange={setActivePostPageIndex}
-                                />
-                              )}
-
-                              <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-white/20 dark:border-slate-800">
-                                  <Shield size={16} className={themeClasses.text} />
-                                  <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Threat Parameters</h3>
-                                </div>
-                                {activePost.threatIntel ? (
-                                  <ThreatIntelPanel intel={activePost.threatIntel} isSidebar={true} />
-                                ) : (
-                                  <p className="text-xs text-slate-400 text-center py-4 font-mono">NO_INTELLIGENCE_METRICS_FOUND</p>
-                                )}
-                              </div>
-
-                              <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
-
-                              <RecentIntelWidget currentPostId={activePost.id} posts={posts} themeClasses={themeClasses} onSelectPost={setSelectedPostId} />
-                              <ArticleIntegrityWidget content={activePost.content} />
-                            </div>
-                          </div>
-                        );
-
-                      case 'editorial':
-                        return (
-                          <div className="max-w-4xl mx-auto space-y-8 py-4 font-serif">
-                            <div className="space-y-4 text-center">
-                              <span className="font-mono text-xs uppercase tracking-widest text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 pb-1 px-3">
-                                /{activePost.category}
-                              </span>
-                              <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white leading-tight font-semibold tracking-tight">
-                                {activePost.title}
-                              </h1>
-                              <div className="flex justify-center items-center gap-4 text-xs font-sans text-slate-400 font-mono tracking-wider">
-                                {renderAuthorMeta(activePost, true)}
-                                <span>—</span>
-                                <span>{activePost.date}</span>
-                                <span>—</span>
-                                <span className="font-bold text-rose-500">{activePost.readTime}</span>
-                              </div>
-                            </div>
-
-                            {activePost.impactLevel && (
-                              <ImpactLevelRibbon level={activePost.impactLevel} />
-                            )}
-
-                            {activePost.showBanner !== false && (
-                              activePost.bannerImage ? (
-                                <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
-                                  <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                </div>
-                              ) : (
-                                <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
-                                  <ThemeBannerFallback
-                                    themeColor={activePost.themeColor}
-                                    category={activePost.category}
-                                    title={activePost.title}
-                                    isDark={darkMode}
-                                    className="h-full rounded-xl"
-                                  />
-                                </div>
-                              )
-                            )}
-
-                            {activePost.summary && (
-                              <div className="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800 italic text-slate-700 dark:text-slate-300 font-sans leading-relaxed text-sm">
-                                "{activePost.summary}"
-                              </div>
-                            )}
-
-                            <div className="prose dark:prose-invert max-w-none pt-4">
-                              <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
-                              <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
-                            </div>
-
-                            {activePost.threatIntel && (
-                              <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80">
-                                <h3 className="font-mono font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Metadata Analysis Matrices</h3>
-                                <ThreatIntelPanel intel={activePost.threatIntel} />
-                              </div>
-                            )}
-
-                            <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80">
-                              <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-200 dark:border-slate-800/60">
-                              <ArticleIntegrityWidget content={activePost.content} />
-                            </div>
-                          </div>
-                        );
-
-                      case 'high-density':
-                      default:
-                        return (
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                            {/* Main Report Body */}
-                            <div className="lg:col-span-8 space-y-5">
-                              <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
-                                <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
-                                  /{activePost.category}
-                                </span>
-
-                                <h1 className="text-xl md:text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
-                                  {activePost.title}
-                                </h1>
-
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-mono font-medium pt-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <User size={13} className="text-slate-400" />
-                                    {renderAuthorMeta(activePost)}
-                                  </div>
-                                  <span className="flex items-center gap-1.5">
-                                    <Calendar size={13} className="text-slate-400" />
-                                    {activePost.date}
-                                  </span>
-                                  <span className="flex items-center gap-1.5">
-                                    <Clock size={13} className="text-slate-400" />
-                                    {activePost.readTime}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {activePost.showBanner !== false && (
-                                activePost.bannerImage ? (
-                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
-                                    <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                  </div>
-                                ) : (
-                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
-                                    <ThemeBannerFallback
-                                      themeColor={activePost.themeColor}
-                                      category={activePost.category}
-                                      title={activePost.title}
-                                      isDark={darkMode}
-                                      className="h-full rounded-xl"
+                                {activePost.showToc && (
+                                  <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80">
+                                    <TableOfContents
+                                      content={activePost.content}
+                                      themeClasses={themeClasses}
+                                      postPages={postPages}
+                                      currentPageIndex={activePostPageIndex}
+                                      onPageChange={setActivePostPageIndex}
                                     />
                                   </div>
-                                )
-                              )}
+                                )}
 
-                              {activePost.summary && activePost.showAbstract !== false && (
-                                <div className="bg-slate-100/50 dark:bg-slate-950/20 rounded-xl p-4.5 border border-slate-200 dark:border-slate-800">
-                                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Abstract / Executive Summary</h3>
-                                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-xs md:text-sm">
-                                    "{activePost.summary}"
-                                  </p>
-                                </div>
-                              )}
-
-                              <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
-                                <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
-                                <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
-                              </div>
-                            </div>
-
-                            {/* Sidebars */}
-                            <div className="lg:col-span-4 sticky top-24 space-y-6">
-                              {activePost.showToc && (
-                                <TableOfContents
-                                  content={activePost.content}
-                                  themeClasses={themeClasses}
-                                  postPages={postPages}
-                                  currentPageIndex={activePostPageIndex}
-                                  onPageChange={setActivePostPageIndex}
-                                />
-                              )}
-
-                              <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
-                                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                                  <Shield size={16} className={themeClasses.text} />
-                                  <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Security Parameters</h3>
-                                </div>
-                                {activePost.threatIntel ? (
-                                  <ThreatIntelPanel intel={activePost.threatIntel} isSidebar={true} />
-                                ) : (
-                                  <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-mono text-xs">
-                                    NO_VULN_DATA_DECLARED
+                                {activePost.threatIntel && (
+                                  <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80">
+                                    <h3 className="font-mono font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Metadata Analysis Matrices</h3>
+                                    <ThreatIntelPanel intel={activePost.threatIntel} />
                                   </div>
                                 )}
+
+                                <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80">
+                                  <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
+                                </div>
+
+                                <div className="pt-6 border-t border-slate-200 dark:border-slate-800/60">
+                                  <ArticleIntegrityWidget content={activePost.content} />
+                                </div>
                               </div>
+                            );
 
-                              <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
+                          case 'high-density':
+                          default:
+                            return (
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                {/* Main Report Body */}
+                                <div className="lg:col-span-8 space-y-5">
+                                  <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
+                                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
+                                      /{activePost.category}
+                                    </span>
 
-                              <RecentIntelWidget currentPostId={activePost.id} posts={posts} themeClasses={themeClasses} onSelectPost={setSelectedPostId} />
-                              <ArticleIntegrityWidget content={activePost.content} />
+                                    <h1 className="text-xl md:text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
+                                      {activePost.title}
+                                    </h1>
+
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-mono font-medium pt-1">
+                                      <div className="flex items-center gap-1.5">
+                                        <User size={13} className="text-slate-400" />
+                                        {renderAuthorMeta(activePost)}
+                                      </div>
+                                      <span className="flex items-center gap-1.5">
+                                        <Calendar size={13} className="text-slate-400" />
+                                        {activePost.date}
+                                      </span>
+                                      <span className="flex items-center gap-1.5">
+                                        <Clock size={13} className="text-slate-400" />
+                                        {activePost.readTime}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {activePost.showBanner !== false && (
+                                    activePost.bannerImage ? (
+                                      <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                        <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      </div>
+                                    ) : (
+                                      <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                        <ThemeBannerFallback
+                                          themeColor={activePost.themeColor}
+                                          category={activePost.category}
+                                          title={activePost.title}
+                                          isDark={darkMode}
+                                          className="h-full rounded-xl"
+                                        />
+                                      </div>
+                                    )
+                                  )}
+
+                                  {activePost.summary && activePost.showAbstract !== false && (
+                                    <div className="bg-slate-100/50 dark:bg-slate-950/20 rounded-xl p-4.5 border border-slate-200 dark:border-slate-800">
+                                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Abstract / Executive Summary</h3>
+                                      <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-xs md:text-sm">
+                                        "{activePost.summary}"
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
+                                    <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
+                                    <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
+                                  </div>
+                                </div>
+
+                                {/* Sidebars */}
+                                <div className="lg:col-span-4 sticky top-24 space-y-6">
+                                  {activePost.showToc && (
+                                    <TableOfContents
+                                      content={activePost.content}
+                                      themeClasses={themeClasses}
+                                      postPages={postPages}
+                                      currentPageIndex={activePostPageIndex}
+                                      onPageChange={setActivePostPageIndex}
+                                    />
+                                  )}
+
+                                  <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
+                                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                      <Shield size={16} className={themeClasses.text} />
+                                      <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Security Parameters</h3>
+                                    </div>
+                                    {activePost.threatIntel ? (
+                                      <ThreatIntelPanel intel={activePost.threatIntel} isSidebar={true} />
+                                    ) : (
+                                      <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-mono text-xs">
+                                        NO_VULN_DATA_DECLARED
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
+
+                                  <RecentIntelWidget currentPostId={activePost.id} posts={posts} themeClasses={themeClasses} onSelectPost={setSelectedPostId} />
+                                  <ArticleIntegrityWidget content={activePost.content} />
+                                </div>
+                              </div>
+                            );
+                        }
+                      })();
+
+                      if (activeCollection) {
+                        return (
+                          <div className="flex flex-col lg:flex-row gap-8 items-start">
+                            <CollectionSidebar
+                              collection={activeCollection}
+                              currentPostSlug={activePost.slug}
+                              onSelectPostBySlug={(targetSlug) => {
+                                const targetPost = posts.find(p => p.slug === targetSlug);
+                                if (targetPost) {
+                                  setSelectedPostId(targetPost.id);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                              }}
+                              isDark={darkMode}
+                            />
+                            <div className="flex-1 w-full min-w-0">
+                              {layoutContent}
                             </div>
                           </div>
                         );
-                    }
-                  })()}
+                      }
 
-                </motion.div>
-              );
-            })()
-          ) : (
+                      return layoutContent;
+                    })()}
+                  </motion.div>
+                );
+            })()) : (
 
             /* View Mode: Publications Catalog Screen */
             <motion.div

@@ -25,9 +25,34 @@ export const PORTAL_CONFIG = {
   description: "Technical publications focusing on cyber threat intelligence, vulnerability dissections, malware reverse engineering, detection engineering, and security systems architecture.",
   logoText: "RESEARCH_CENTER",
   copyright: "© 2026 OffSecIntel. All rights reserved.",
-  defaultTheme: "dark",
-  enableCollections: false // Master toggle for Microsoft Learn style curated reading path collections
+  defaultTheme: 'slate',
+  enableCollections: true, // Master toggle for Microsoft Learn style reading paths
 };
+
+export const COLLECTIONS_CONFIG: CollectionConfig[] = [
+  {
+    slug: 'android-il2cpp-series',
+    label: 'Android IL2CPP Reverse Engineering',
+    description: 'Multi-part research series decompiling and analyzing dual-behavior Android games and IL2CPP cloaking mechanisms.',
+    visible: true,
+    toc: [
+      {
+        label: '1. Fundamentals & Analysis Tools',
+        children: [
+          { label: 'Environment & Frida Setup', postSlug: 'android-re-setup' },
+          { label: 'AppsFlyer & PlayerPrefs Tracking', postSlug: 'appsflyer-playerprefs' }
+        ]
+      },
+      {
+        label: '2. Deep-Dive Case Studies',
+        children: [
+          { label: 'Uncloaking Two-Faced Android Game', postSlug: 'uncloaking-two-faced-android-game-il2cpp' },
+          { label: 'Operation DreamBus Campaign', postSlug: 'operation-dreambus-campaign-mapping' }
+        ]
+      }
+    ]
+  }
+];
 
 // ============================================================
 // HIERARCHICAL TAXONOMY TREE
@@ -259,8 +284,7 @@ export const NAVIGATION_CONFIG: NavMenuItem[] = [
 // ============================================================
 // COLLECTIONS CONFIGURATION (Microsoft Learn Style Reading Paths)
 // ============================================================
-// Aggregates posts from multiple taxonomy categories into structured reading paths.
-export const COLLECTIONS_CONFIG: CollectionConfig[] = [];
+// Aggregates posts from multiple taxonomy categories into structured reading paths. (See COLLECTIONS_CONFIG defined above)
 
 // Legacy exports for backward compatibility
 export const NAVIGATION_MENU: NavItem[] = NAVIGATION_CONFIG

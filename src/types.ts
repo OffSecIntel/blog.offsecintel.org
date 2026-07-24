@@ -53,6 +53,7 @@ export interface BlogPost {
   impactLevel?: 'critical' | 'high' | 'medium' | 'low' | 'info';
   coAuthor?: string;
   reviewer?: string;
+  collection?: string;
 }
 
 export interface ExportSettings {
