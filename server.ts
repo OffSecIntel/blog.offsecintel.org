@@ -24,12 +24,19 @@ if (!fs.existsSync(BLOG_ASSETS_DIR)) {
 app.use(express.json({ limit: '15mb' }));
 
 function resolveAssetFile(baseDir: string, relPath: string): string | null {
-  const directPath = path.join(baseDir, relPath);
+  const rootDir = path.resolve(baseDir);
+  const cleanRel = relPath.replace(/^[/\\]+/, '');
+  const directPath = path.resolve(baseDir, cleanRel);
+
+  // Path traversal security check
+  if (!directPath.startsWith(rootDir)) {
+    return null;
+  }
+
   if (fs.existsSync(directPath) && fs.statSync(directPath).isFile()) {
     return directPath;
   }
 
-  const cleanRel = relPath.replace(/^[/\\]+/, '');
   const pathParts = cleanRel.split(/[/\\]+/).filter(Boolean);
   if (pathParts.length === 0) return null;
 
