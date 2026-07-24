@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
 import { ThemeBannerFallback } from './components/ThemeBannerFallback';
+import { MetaManager } from './services/seo/metaManager';
 
 // ----------------------------------------------------------------------
 // Hugo / Jekyll Style Static Markdown Loading Engine
@@ -1023,6 +1024,46 @@ export default function App() {
       isFirstSync.current = false;
     }
   }, [selectedCategory, selectedPostId, showDossier, dossierSelectedResearcherId, loading, posts]);
+
+  // Synchronize SEO & Open Graph meta tags for WhatsApp / Social Media sharing
+  useEffect(() => {
+    if (loading) return;
+
+    if (showDossier && dossierSelectedResearcherId) {
+      const author = authors.find(a => a.id === dossierSelectedResearcherId);
+      MetaManager.updateMeta({
+        title: author ? `${author.name} (${author.alias || author.role})` : 'Research Contributors',
+        description: author ? author.bio : 'Security specialists and reverse engineers at OffSecIntel.',
+        type: 'website'
+      });
+      return;
+    }
+
+    if (selectedPostId) {
+      const post = posts.find(p => p.id === selectedPostId);
+      if (post) {
+        MetaManager.updateMeta({
+          title: post.title,
+          description: post.summary,
+          image: post.bannerImage,
+          type: 'article'
+        });
+        return;
+      }
+    }
+
+    if (selectedCategory !== 'all') {
+      const catInfo = CATEGORIES_CONFIG.find(c => c.id === selectedCategory);
+      MetaManager.updateMeta({
+        title: catInfo ? catInfo.label : `${selectedCategory.toUpperCase()} Publications`,
+        description: catInfo ? catInfo.description : 'Security advisories and publications.',
+        type: 'website'
+      });
+      return;
+    }
+
+    MetaManager.updateMeta();
+  }, [selectedPostId, showDossier, dossierSelectedResearcherId, selectedCategory, loading, posts, authors]);
 
   // Sync scroll progress on post reader
   useEffect(() => {
