@@ -2,7 +2,7 @@
 title: Quantum Resistance in Multi-layered Cryptographic Enclaves
 slug: quantum-resistance-cryptographic-enclaves
 summary: Evaluating Lattice-based Cryptography schemes within secure enclave boundaries and their computational overhead metrics.
-category: research
+category: crypto-research
 author: Mandar Kulkarni
 date: 2026-07-05
 readTime: 6 min read
