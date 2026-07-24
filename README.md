@@ -1,6 +1,6 @@
-# OffSecIntel - Security Research & Malware RE Portal
+# OffSecIntel — Cyber Security Research & Threat Intelligence
 
-A highly polished, high-performance security research publication and malware reverse-engineering portal built using **React 19**, **Vite**, **TypeScript**, **Tailwind CSS**, and **Express**. It operates as a full-stack system that serves static, markdown-based publication cards while providing dynamic local asset management APIs and AI-assisted Threat Intel research tools.
+A highly polished, high-performance security research and threat intelligence publication platform built using **React 19**, **Vite**, **TypeScript**, **Tailwind CSS**, and **Express**. It operates as a full-stack system serving markdown-based publications while providing dynamic asset management APIs, data-driven taxonomy registries, and AI-assisted Threat Intel research tools.
 
 ---
 

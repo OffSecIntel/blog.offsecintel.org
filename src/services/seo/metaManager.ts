@@ -58,7 +58,7 @@ export class MetaManager {
     this.setMetaTag('name', 'theme-color', themeColor);
 
     // 2. Open Graph (WhatsApp, Facebook, LinkedIn)
-    this.setMetaTag('property', 'og:site_name', 'OffSecIntel Research Portal');
+    this.setMetaTag('property', 'og:site_name', 'OffSecIntel Research Center');
     this.setMetaTag('property', 'og:type', ogType);
     this.setMetaTag('property', 'og:title', title);
     this.setMetaTag('property', 'og:description', description);

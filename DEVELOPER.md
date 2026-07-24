@@ -1,6 +1,6 @@
-# OffSecIntel - System Architecture & Developer Documentation
+# OffSecIntel — System Architecture & Developer Documentation
 
-Welcome to the **OffSecIntel Security Publications Portal** developer guide. For the high-level system blueprint, taxonomy registry, SEO engine, and framework abstraction rules, see [ARCHITECTURE.md](file:///a:/Git/GitHub/OSI/frontend/blog.offsecintel.org/ARCHITECTURE.md).
+Welcome to the **OffSecIntel — Cyber Security Research & Threat Intelligence** developer guide. For the high-level system blueprint, taxonomy registry, SEO engine, and framework abstraction rules, see [ARCHITECTURE.md](file:///a:/Git/GitHub/OSI/frontend/blog.offsecintel.org/ARCHITECTURE.md).
 
 ---
 
