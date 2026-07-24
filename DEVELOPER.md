@@ -39,12 +39,53 @@ In development, Express acts as the primary host. The Vite development server is
 ### Production Architecture
 During compilation (`npm run build`):
 1. The **React SPA client** is compiled into optimized HTML, JS, and CSS inside `/dist`.
-2. The **Express Backend Server** (`server.ts`) is bundled into a single-file CommonJS module (`dist/server.cjs`) using `esbuild`.
-3. In production (`npm run start`), the bundled Express server boots and serves `/dist` as static assets while hosting the live API endpoints on `/api/*` and serving post assets from `/blog-assets/*`.
+2. A custom Vite build plugin (`copyBlogAssetsPlugin` in `vite.config.ts`) automatically copies `blog-assets/` to `dist/blog-assets/`, guaranteeing that static host deployments (e.g. GitHub Pages) serve all post images and code artifacts cleanly.
+3. The **Express Backend Server** (`server.ts`) is bundled into a single-file CommonJS module (`dist/server.cjs`) using `esbuild`.
+4. In production (`npm run start`), the bundled Express server boots and serves `/dist` as static assets while hosting live API endpoints on `/api/*`.
+
 
 ---
 
-## 📂 2. File Directory Structures & Asset Management
+## 🌿 2. Git Branching Hierarchy & CI/CD Pipeline Architecture
+
+### Branching & PR Merge Hierarchy
+
+OffSecIntel repositories follow a strict, sequential branch promotion hierarchy:
+
+```mermaid
+graph LR
+    A[feature/* or fix/*] -->|PR & Signed Commits| B[dev Integration Branch]
+    B -->|Staging / SIT / UAT Testing| B
+    B -->|Verified Release PR| C[main / master Production]
+```
+
+1. **`main` / `master` (Production Branch)**: Stable, production-ready release code. Direct commits are strictly restricted.
+2. **`dev` (Development & Integration Branch)**: Created off `main`/`master`. Serves as the central integration branch for testing environments (`dev`, `sit`, `uat`).
+3. **`feature/*` & `fix/*` (Feature Branches)**: Created strictly off `dev`. All feature branches merge into `dev` via Pull Request.
+
+### CI/CD & Automated Testing Pipeline Roadmap
+
+```mermaid
+graph TD
+    subgraph Dev_PR_Pipeline [Dev Integration PR Pipeline]
+        D1[PR Created to dev] --> D2[Signed Commit Signature Audit]
+        D2 --> D3[TypeScript & Syntax Check npm run lint]
+        D3 --> D4[Unit & Component Test Suite]
+        D4 --> D5[Vite Production Build Test npm run build]
+        D5 -->|All Checks Pass| D6[Merge into dev]
+    end
+
+    subgraph Production_Release_Pipeline [Production Release Pipeline]
+        P1[PR Created dev -> main] --> P2[Full Automated End-to-End Regression Suite]
+        P2 --> P3[Security & Signed Commit Verification Audit]
+        P3 --> P4[Merge into main / master]
+        P4 --> P5[GitHub Actions Deployment to Production CDN / Pages]
+    end
+```
+
+---
+
+## 📂 3. File Directory Structures & Asset Management
 
 To support robust asset isolation, each publication is associated with a distinct subdirectory under `/blog-assets/` matching its slug.
 

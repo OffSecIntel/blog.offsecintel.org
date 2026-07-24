@@ -746,23 +746,20 @@ export function resolveAssetUrl(url: string | undefined): string | undefined {
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
     return url;
   }
-  
+
   const cleanUrl = url.startsWith('/') ? url : '/' + url;
   const pathname = window.location.pathname;
   const pathParts = pathname.split('/').filter(Boolean);
-  const isGitHubPages = window.location.hostname.endsWith('github.io') || 
-                        (!['localhost', '127.0.0.1'].includes(window.location.hostname) && 
-                         !window.location.hostname.includes('.run.app') && 
-                         pathParts.length > 0);
-                         
-  if (isGitHubPages && pathParts.length > 0) {
+  const isGitHubPagesRepo = window.location.hostname.endsWith('github.io') && pathParts.length > 0;
+
+  if (isGitHubPagesRepo) {
     const base = '/' + pathParts[0];
-    if (cleanUrl.startsWith(base)) {
+    if (cleanUrl === base || cleanUrl.startsWith(`${base}/`)) {
       return cleanUrl;
     }
     return `${base}${cleanUrl}`;
   }
-  
+
   return cleanUrl;
 }
 
@@ -951,10 +948,10 @@ export default function App() {
   useEffect(() => {
     if (loading) return;
     
-    // Detect if running under a static GitHub Pages environment
-    // Standard checks: is hostname "*.github.io"? Or is the current path nested (repo subpath)?
-    const isGitHubPages = window.location.hostname.endsWith('github.io') || 
-                          window.location.pathname.split('/').filter(Boolean).length > 1;
+    // Detect if running under a static GitHub Pages repository environment (e.g. user.github.io/repo)
+    // Custom domains (blog.offsecintel.org) and local dev servers use standard pathname routing
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const isGitHubPages = window.location.hostname.endsWith('github.io') && pathParts.length > 0;
 
     let targetAbsoluteUrl = '';
 
@@ -1058,7 +1055,7 @@ export default function App() {
       post.author.toLowerCase().includes(searchLower) ||
       post.threatIntel?.threatActor?.toLowerCase().includes(searchLower) ||
       post.threatIntel?.malwareFamily?.toLowerCase().includes(searchLower) ||
-      post.threatIntel?.cves?.some(c => c.toLowerCase().includes(searchLower));
+      post.threatIntel?.cves?.some(c => typeof c === 'string' && c.toLowerCase().includes(searchLower));
 
     return matchesCategory && matchesSubcategory && matchesSearch;
   });
