@@ -24,8 +24,9 @@ To support clinical, in-depth malware analyses and systems research, each blog p
     *   **Paste & Revise:** Paste this link straight into your markdown file. It resolves using relative paths, guaranteeing perfect cross-compatibility between local previews and production builds.
 3.  **Phase 3 — Git Check-In & Static Asset Commitment:**
     Commit both the completed article markdown and the newly populated `blog-assets/<slug>/` folder to your Git repository.
-4.  **Phase 4 — Zero-Overhead Production Serving:**
-    When the portal is compiled for production (or built by GitHub Actions), Vite bundles these directories into the optimized output. When deployed to GitHub Pages, Netlify, or similar static hosts, all these analysis assets are served as plain static files. The interactive client widget continues to display download buttons and copy helpers smoothly in the browser, completely without a backend database!
+4.  **Phase 4 — Zero-Overhead Production Asset Bundling:**
+    When the portal is compiled for production (`npm run build` or GitHub Actions), a custom Vite build plugin (`copyBlogAssetsPlugin` in `vite.config.ts`) automatically copies the `blog-assets/` directory into `dist/blog-assets/`. When deployed to GitHub Pages or static hosts, all publication images (such as `threat_intel_banner.jpg`), Frida scripts, and analysis artifacts are served statically with 100% reliability and zero 404 errors!
+
 
 ---
 
@@ -143,6 +144,15 @@ Run the compiled full-stack environment:
 ```bash
 npm run start
 ```
+
+---
+
+## 🌿 Git Branching Strategy & PR Sequence
+All contributions follow a sequential promotion model:
+* **`main` / `master`**: Primary production branch. Direct commits are prohibited.
+* **`dev`**: Central integration branch for testing environments (`dev`, `sit`, `uat`).
+* **`feature/*` / `fix/*`**: Created strictly off `dev`.
+* **PR Promotion Flow**: `feature/*` ➔ `dev` ➔ `main` / `master`.
 
 ---
 
