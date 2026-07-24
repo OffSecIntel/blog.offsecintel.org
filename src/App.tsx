@@ -1848,9 +1848,9 @@ export default function App() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl gap-2">
+                    <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl gap-2 px-4">
                       <Search size={28} className="text-slate-400" />
-                      <h4 className="font-semibold text-slate-800 dark:text-white text-sm">NO_MATCHING_PUBLICATION_NODES_FOUND</h4>
+                      <h4 className="font-semibold text-slate-800 dark:text-white text-xs sm:text-sm font-mono break-all sm:break-normal">NO_MATCHING_PUBLICATION_NODES_FOUND</h4>
                       <p className="text-xs text-slate-400 max-w-sm">
                         Try modifying search keys or resetting selected categories/subcategories.
                       </p>
@@ -1870,12 +1870,12 @@ export default function App() {
       {/* Structured Footer */}
       <footer className={`mt-16 border-t py-8 text-[10px] font-mono transition-colors ${darkMode ? 'bg-[#0d1321] border-slate-800/80 text-slate-500' : 'bg-white border-slate-200 text-slate-500'
         }`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-2.5">
             <OffSecIntelLogoIcon className="w-5 h-5 p-0.5 rounded" />
             <span>{PORTAL_CONFIG.copyright}</span>
           </div>
-          <div className="flex items-center gap-5 text-slate-400 dark:text-slate-500">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-5 text-slate-400 dark:text-slate-500">
             <button
               onClick={() => {
                 setSelectedPostId(null);
@@ -1888,9 +1888,9 @@ export default function App() {
               Our Team
             </button>
             <span className="hidden sm:inline text-slate-300 dark:text-slate-800">|</span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              PUBLICATION_NODE: VERIFIED GITHUB SIGNED MERGE
+            <span className="flex items-center gap-1.5 text-[9px] sm:text-[10px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span className="break-all sm:break-normal">PUBLICATION_NODE: VERIFIED GITHUB SIGNED MERGE</span>
             </span>
           </div>
         </div>
