@@ -90,17 +90,45 @@ app.delete("/api/posts/:id", (req, res) => {
   }
 });
 
+// Recursive helper to locate asset directory for a post slug across any nested subfolder
+function findPostAssetDir(slug: string): { dirPath: string; urlPrefix: string } {
+  const directDir = path.join(BLOG_ASSETS_DIR, slug);
+  if (fs.existsSync(directDir)) {
+    return { dirPath: directDir, urlPrefix: `/blog-assets/${slug}` };
+  }
+
+  function searchDir(currentDir: string, currentRelPath: string): { dirPath: string; urlPrefix: string } | null {
+    if (!fs.existsSync(currentDir)) return null;
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const fullSubDir = path.join(currentDir, entry.name);
+        const relSubPath = currentRelPath ? `${currentRelPath}/${entry.name}` : entry.name;
+        if (entry.name === slug) {
+          return { dirPath: fullSubDir, urlPrefix: `/blog-assets/${relSubPath}` };
+        }
+        const found = searchDir(fullSubDir, relSubPath);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  const found = searchDir(BLOG_ASSETS_DIR, '');
+  if (found) return found;
+
+  fs.mkdirSync(directDir, { recursive: true });
+  return { dirPath: directDir, urlPrefix: `/blog-assets/${slug}` };
+}
+
 // Blog Assets management APIs
 app.get("/api/posts/:slug/assets", (req, res) => {
   try {
     const { slug } = req.params;
-    const postDir = path.join(BLOG_ASSETS_DIR, slug);
-    if (!fs.existsSync(postDir)) {
-      fs.mkdirSync(postDir, { recursive: true });
-    }
-    const files = fs.readdirSync(postDir);
+    const { dirPath, urlPrefix } = findPostAssetDir(slug);
+    const files = fs.readdirSync(dirPath);
     const assets = files.map(file => {
-      const filePath = path.join(postDir, file);
+      const filePath = path.join(dirPath, file);
       const stats = fs.statSync(filePath);
       const ext = path.extname(file).toLowerCase();
       let type = "file";
@@ -113,7 +141,7 @@ app.get("/api/posts/:slug/assets", (req, res) => {
         name: file,
         size: stats.size,
         type,
-        url: `/blog-assets/${slug}/${file}`,
+        url: `${urlPrefix}/${file}`,
         updatedAt: stats.mtime
       };
     });
@@ -131,11 +159,8 @@ app.post("/api/posts/:slug/assets", (req, res) => {
        res.status(400).json({ error: "Missing required fields (filename, content)" });
        return;
     }
-    const postDir = path.join(BLOG_ASSETS_DIR, slug);
-    if (!fs.existsSync(postDir)) {
-      fs.mkdirSync(postDir, { recursive: true });
-    }
-    const filePath = path.join(postDir, filename);
+    const { dirPath, urlPrefix } = findPostAssetDir(slug);
+    const filePath = path.join(dirPath, filename);
     const buffer = Buffer.from(content, "base64");
     fs.writeFileSync(filePath, buffer);
 
@@ -154,7 +179,7 @@ app.post("/api/posts/:slug/assets", (req, res) => {
         name: filename,
         size: stats.size,
         type,
-        url: `/blog-assets/${slug}/${filename}`,
+        url: `${urlPrefix}/${filename}`,
         updatedAt: stats.mtime
       }
     });
@@ -166,7 +191,8 @@ app.post("/api/posts/:slug/assets", (req, res) => {
 app.delete("/api/posts/:slug/assets/:filename", (req, res) => {
   try {
     const { slug, filename } = req.params;
-    const filePath = path.join(BLOG_ASSETS_DIR, slug, filename);
+    const { dirPath } = findPostAssetDir(slug);
+    const filePath = path.join(dirPath, filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       res.json({ success: true });

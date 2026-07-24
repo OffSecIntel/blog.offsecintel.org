@@ -12,8 +12,8 @@ import { ArticleAssetsWidget } from './components/ArticleAssetsWidget';
 import { PORTAL_CONFIG, TAXONOMY_NODES, NAVIGATION_CONFIG } from './config';
 import { TaxonomyRegistry } from './services/taxonomy/registry';
 import { NavDropdown } from './components/NavDropdown';
-import { 
-  Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye, 
+import {
+  Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye,
   Globe, Activity, AlertTriangle, ExternalLink, Lock, RefreshCw, Layers, Terminal,
   CheckCircle, ChevronLeft, ChevronRight, Menu, X, Key
 } from 'lucide-react';
@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
 import { ThemeBannerFallback } from './components/ThemeBannerFallback';
 import { MetaManager } from './services/seo/metaManager';
+<<<<<<< HEAD
 
 const taxonomy = new TaxonomyRegistry(TAXONOMY_NODES);
 try {
@@ -28,6 +29,8 @@ try {
 } catch (err) {
   console.warn("Taxonomy Integrity Check:", err);
 }
+=======
+>>>>>>> 04204951374563539fcae44555620d2db0e9a30a
 
 // ----------------------------------------------------------------------
 // Hugo / Jekyll Style Static Markdown Loading Engine
@@ -171,7 +174,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
 export function loadStaticMarkdownPosts(): BlogPost[] {
   const modules = (import.meta as any).glob('./posts/**/*.md', { query: '?raw', eager: true }) as Record<string, any>;
   const parsedPosts: BlogPost[] = [];
-  
+
   for (const path in modules) {
     if (Object.prototype.hasOwnProperty.call(modules, path)) {
       const rawModule = modules[path];
@@ -182,7 +185,7 @@ export function loadStaticMarkdownPosts(): BlogPost[] {
       }
     }
   }
-  
+
   return parsedPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
@@ -213,13 +216,13 @@ export function parseAuthorProfile(filename: string, fileContent: string): Autho
   const githubUrl = frontmatter.githubUrl || undefined;
   const htbUrl = frontmatter.htbUrl || undefined;
   const role = frontmatter.role || 'Contributing Researcher';
-  
+
   // Extract a clean bio from the first paragraph of content
   const firstParagraph = content.split('\n\n')[0] || '';
   const bio = firstParagraph.replace(/[#*_\-`>]/g, '').trim();
 
-  const specialties = frontmatter.specialties 
-    ? frontmatter.specialties.split(',').map((s: string) => s.trim()).filter(Boolean) 
+  const specialties = frontmatter.specialties
+    ? frontmatter.specialties.split(',').map((s: string) => s.trim()).filter(Boolean)
     : ['Threat Analysis'];
 
   const active = frontmatter.active !== undefined ? frontmatter.active !== 'false' : true;
@@ -243,7 +246,7 @@ export function parseAuthorProfile(filename: string, fileContent: string): Autho
 export function loadStaticAuthorProfiles(): AuthorProfile[] {
   const modules = (import.meta as any).glob('./authors/**/*.md', { query: '?raw', eager: true }) as Record<string, any>;
   const parsedProfiles: AuthorProfile[] = [];
-  
+
   for (const path in modules) {
     if (Object.prototype.hasOwnProperty.call(modules, path)) {
       const rawModule = modules[path];
@@ -254,7 +257,7 @@ export function loadStaticAuthorProfiles(): AuthorProfile[] {
       }
     }
   }
-  
+
   return parsedProfiles;
 }
 
@@ -262,14 +265,14 @@ export function loadStaticAuthorProfiles(): AuthorProfile[] {
 // Theme classes are now handled dynamically and responsively in src/theme.ts
 
 // 1. Table of Contents Component
-export function TableOfContents({ 
-  content, 
+export function TableOfContents({
+  content,
   themeClasses,
   postPages,
   currentPageIndex,
   onPageChange
-}: { 
-  content: string; 
+}: {
+  content: string;
   themeClasses: any;
   postPages?: string[];
   currentPageIndex?: number;
@@ -280,7 +283,7 @@ export function TableOfContents({
 
   useEffect(() => {
     const extracted: typeof headers = [];
-    
+
     if (postPages && postPages.length > 1) {
       // Multipage document: parse each page to record the corresponding pageIndex
       postPages.forEach((pageContent, pageIdx) => {
@@ -293,7 +296,7 @@ export function TableOfContents({
             continue;
           }
           if (inCodeBlock) continue;
-          
+
           if (trimmed.startsWith('#')) {
             const match = trimmed.match(/^#+/);
             if (match) {
@@ -316,7 +319,7 @@ export function TableOfContents({
           continue;
         }
         if (inCodeBlock) continue;
-        
+
         if (trimmed.startsWith('#')) {
           const match = trimmed.match(/^#+/);
           if (match) {
@@ -328,7 +331,7 @@ export function TableOfContents({
         }
       }
     }
-    
+
     setHeaders(extracted);
   }, [content, postPages]);
 
@@ -387,19 +390,17 @@ export function TableOfContents({
                 doScroll();
               }
             }}
-            className={`block text-xs transition-all duration-150 py-0.5 border-l -ml-[1px] leading-tight ${
-              h.level === 1 
-                ? 'font-semibold text-slate-900 dark:text-slate-100' 
-                : h.level === 2 
-                  ? 'font-medium text-slate-700 dark:text-slate-300' 
-                  : h.level === 3 
-                    ? 'text-slate-500 dark:text-slate-400 font-normal' 
+            className={`block text-xs transition-all duration-150 py-0.5 border-l -ml-[1px] leading-tight ${h.level === 1
+                ? 'font-semibold text-slate-900 dark:text-slate-100'
+                : h.level === 2
+                  ? 'font-medium text-slate-700 dark:text-slate-300'
+                  : h.level === 3
+                    ? 'text-slate-500 dark:text-slate-400 font-normal'
                     : 'text-slate-400 dark:text-slate-500 italic text-[11px]'
-            } ${
-              activeId === h.id 
-                ? `${themeClasses.text} border-rose-500 dark:border-rose-400 font-bold scale-[1.02]` 
+              } ${activeId === h.id
+                ? `${themeClasses.text} border-rose-500 dark:border-rose-400 font-bold scale-[1.02]`
                 : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-            }`}
+              }`}
             style={{ paddingLeft: `${(h.level - 1) * 12 + 12}px` }}
           >
             {h.text}
@@ -411,15 +412,15 @@ export function TableOfContents({
 }
 
 // 2. Recent Intel Widget
-export function RecentIntelWidget({ 
-  currentPostId, 
-  posts, 
-  themeClasses, 
-  onSelectPost 
-}: { 
-  currentPostId: string; 
-  posts: BlogPost[]; 
-  themeClasses: any; 
+export function RecentIntelWidget({
+  currentPostId,
+  posts,
+  themeClasses,
+  onSelectPost
+}: {
+  currentPostId: string;
+  posts: BlogPost[];
+  themeClasses: any;
   onSelectPost: (id: string) => void;
 }) {
   const recent = posts
@@ -437,14 +438,14 @@ export function RecentIntelWidget({
       <div className="space-y-2.5">
         {recent.map((p) => {
           const sev = p.threatIntel?.severity || 'info';
-          const sevColor = 
+          const sevColor =
             sev === 'critical' ? 'text-red-500 bg-red-500/10 border-red-500/20' :
-            sev === 'high' ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' :
-            sev === 'medium' ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' :
-            'text-cyan-500 bg-cyan-500/10 border-cyan-500/20';
+              sev === 'high' ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' :
+                sev === 'medium' ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' :
+                  'text-cyan-500 bg-cyan-500/10 border-cyan-500/20';
 
           return (
-            <div 
+            <div
               key={p.id}
               onClick={() => onSelectPost(p.id)}
               className="group cursor-pointer p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/30 dark:bg-slate-950/20 hover:bg-slate-100/75 dark:hover:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700 transition-all text-xs"
@@ -506,8 +507,8 @@ export function ImpactLevelRibbon({ level }: { level?: BlogPost['impactLevel'] }
 // Custom High-Quality SVG fallback representation of OffSecIntel (OSI) Shield
 export function OffSecIntelShieldSVG() {
   return (
-    <svg 
-      viewBox="0 0 100 100" 
+    <svg
+      viewBox="0 0 100 100"
       className="w-full h-full text-[#970000] fill-current"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -517,10 +518,10 @@ export function OffSecIntelShieldSVG() {
           <stop offset="100%" stopColor="#800000" />
         </linearGradient>
       </defs>
-      <path 
-        d="M50 8 L85 22 V52 C85 73 70 89 50 95 C30 89 15 72 15 52 V22 L50 8 Z" 
-        fill="none" 
-        stroke="url(#shieldGrad)" 
+      <path
+        d="M50 8 L85 22 V52 C85 73 70 89 50 95 C30 89 15 72 15 52 V22 L50 8 Z"
+        fill="none"
+        stroke="url(#shieldGrad)"
         strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -603,10 +604,10 @@ export function OffSecIntelLogoIcon({ className = "w-9 h-9 p-1" }: { className?:
   return (
     <div className={`rounded-lg bg-[#970000]/10 border border-[#970000]/20 overflow-hidden flex items-center justify-center shrink-0 ${className}`}>
       {!useFallback ? (
-        <img 
-          src={logoUrl} 
-          alt="OffSecIntel Logo" 
-          className="w-full h-full object-contain" 
+        <img
+          src={logoUrl}
+          alt="OffSecIntel Logo"
+          className="w-full h-full object-contain"
           onError={() => setUseFallback(true)}
           referrerPolicy="no-referrer"
         />
@@ -620,10 +621,10 @@ export function OffSecIntelLogoIcon({ className = "w-9 h-9 p-1" }: { className?:
 // 4. Dynamic Logo with Fallback Chain
 export function OffSecIntelLogo() {
   return (
-    <a 
-      href="https://offsecintel.org" 
-      target="_blank" 
-      rel="noopener noreferrer" 
+    <a
+      href="https://offsecintel.org"
+      target="_blank"
+      rel="noopener noreferrer"
       className="flex items-center gap-2.5 cursor-pointer select-none group"
       onClick={(e) => {
         // Prevent click bubbling up so we don't trigger layout resets unless intended,
@@ -663,11 +664,10 @@ export function TacticalPageNavigator({
           onPageChange(currentPage - 1);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold transition-all ${
-          currentPage === 0
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold transition-all ${currentPage === 0
             ? 'opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-800 text-slate-400'
             : 'border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-        }`}
+          }`}
       >
         <ChevronLeft size={13} />
         PREV_PAGE
@@ -681,11 +681,10 @@ export function TacticalPageNavigator({
               onPageChange(idx);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className={`w-7 h-7 flex items-center justify-center rounded-lg border transition-all ${
-              currentPage === idx
+            className={`w-7 h-7 flex items-center justify-center rounded-lg border transition-all ${currentPage === idx
                 ? 'bg-[#970000]/10 border-[#970000]/30 text-[#ff4b4b] font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
+              }`}
           >
             {idx + 1}
           </button>
@@ -701,11 +700,10 @@ export function TacticalPageNavigator({
           onPageChange(currentPage + 1);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold transition-all ${
-          currentPage === totalPages - 1
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold transition-all ${currentPage === totalPages - 1
             ? 'opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-800 text-slate-400'
             : 'border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-        }`}
+          }`}
       >
         NEXT_PAGE
         <ChevronRight size={13} />
@@ -949,7 +947,7 @@ export default function App() {
   // Synchronize category/post selection to URL pathname/hash & search parameters
   useEffect(() => {
     if (loading) return;
-    
+
     // Detect if running under a static GitHub Pages repository environment (e.g. user.github.io/repo)
     // Custom domains (blog.offsecintel.org) and local dev servers use standard pathname routing
     const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -961,12 +959,12 @@ export default function App() {
       // Use hash routing to preserve repo subpaths and support refreshing on static hosts
       let hashPath = '#/';
       const params = new URLSearchParams();
-      
+
       if (selectedCategory !== 'all') {
         const categoryPath = taxonomy.buildUrlPath(selectedCategory).replace(/^\//, '');
         hashPath = `#/${categoryPath}`;
       }
-      
+
       if (selectedPostId) {
         const post = posts.find(p => p.id === selectedPostId);
         if (post) {
@@ -979,7 +977,7 @@ export default function App() {
       } else {
         params.delete('dossier');
       }
-      
+
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       targetAbsoluteUrl = `${window.location.origin}${window.location.pathname}${hashPath}${queryStr}`;
     } else {
@@ -987,11 +985,11 @@ export default function App() {
       let path = '/';
       const params = new URLSearchParams(window.location.search);
       params.delete('category'); // Strip 'category' search param if path exists
-      
+
       if (selectedCategory !== 'all') {
         path = taxonomy.buildUrlPath(selectedCategory);
       }
-      
+
       if (selectedPostId) {
         const post = posts.find(p => p.id === selectedPostId);
         if (post) {
@@ -1007,7 +1005,7 @@ export default function App() {
       } else {
         params.delete('dossier');
       }
-      
+
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       targetAbsoluteUrl = `${window.location.origin}${path}${queryStr}`;
     }
@@ -1053,7 +1051,11 @@ export default function App() {
     }
 
     if (selectedCategory !== 'all') {
+<<<<<<< HEAD
       const catInfo = taxonomy.resolve(selectedCategory);
+=======
+      const catInfo = CATEGORIES_CONFIG.find(c => c.id === selectedCategory);
+>>>>>>> 04204951374563539fcae44555620d2db0e9a30a
       MetaManager.updateMeta({
         title: catInfo ? catInfo.label : `${selectedCategory.toUpperCase()} Publications`,
         description: catInfo ? catInfo.description : 'Security advisories and publications.',
@@ -1081,15 +1083,15 @@ export default function App() {
   // Filter posts based on category, subcategory and search query
   const filteredPosts = posts.filter(post => {
     const matchesCategory = taxonomy.matchesFilter(post.category, selectedCategory);
-    
+
     // Check subcategory matches within Content/Summary if a subcategory is selected
-    const matchesSubcategory = !selectedSubcategory || 
+    const matchesSubcategory = !selectedSubcategory ||
       post.title.toLowerCase().includes(selectedSubcategory.toLowerCase()) ||
       post.summary.toLowerCase().includes(selectedSubcategory.toLowerCase()) ||
       post.content.toLowerCase().includes(selectedSubcategory.toLowerCase());
 
     const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       post.title.toLowerCase().includes(searchLower) ||
       post.summary.toLowerCase().includes(searchLower) ||
       post.content.toLowerCase().includes(searchLower) ||
@@ -1111,16 +1113,14 @@ export default function App() {
   const threatActorsCount = Array.from(new Set(posts.map(p => p.threatIntel?.threatActor).filter(Boolean))).length;
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-200 ${
-      darkMode ? 'bg-[#0b0f19] text-slate-200 selection:bg-rose-500/20' : 'bg-[#f8fafc] text-slate-700 selection:bg-rose-500/10'
-    }`}>
-      
-      {/* Navigation Header */}
-      <header className={`sticky top-0 z-40 border-b transition-colors backdrop-blur ${
-        darkMode ? 'bg-[#0d1321]/90 border-slate-800/80' : 'bg-white/95 border-slate-200/80 shadow-sm'
+    <div className={`min-h-screen font-sans transition-colors duration-200 ${darkMode ? 'bg-[#0b0f19] text-slate-200 selection:bg-rose-500/20' : 'bg-[#f8fafc] text-slate-700 selection:bg-rose-500/10'
       }`}>
+
+      {/* Navigation Header */}
+      <header className={`sticky top-0 z-40 border-b transition-colors backdrop-blur ${darkMode ? 'bg-[#0d1321]/90 border-slate-800/80' : 'bg-white/95 border-slate-200/80 shadow-sm'
+        }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
-          
+
           {/* Brand/Logo */}
           <div onClick={() => { setSelectedPostId(null); setSelectedCategory('all'); setSelectedSubcategory(null); setShowDossier(false); }}>
             <OffSecIntelLogo />
@@ -1154,9 +1154,8 @@ export default function App() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-lg border transition-all ${
-                darkMode ? 'bg-slate-900 border-slate-800 text-yellow-500 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
-              }`}
+              className={`p-2 rounded-lg border transition-all ${darkMode ? 'bg-slate-900 border-slate-800 text-yellow-500 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
+                }`}
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {darkMode ? <Sun size={15} /> : <Moon size={15} />}
@@ -1164,7 +1163,7 @@ export default function App() {
           </div>
 
         </div>
-        
+
         {/* Top Progress bar indicator (only visible on post view) */}
         {selectedPostId && activePost && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200/50 dark:bg-slate-800/50 overflow-hidden">
@@ -1175,7 +1174,7 @@ export default function App() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        
+
         <AnimatePresence mode="wait">
           {showDossier ? (
             <motion.div
@@ -1186,16 +1185,16 @@ export default function App() {
               transition={{ duration: 0.15 }}
               className="space-y-6"
             >
-              <AuthorDossier 
-                posts={posts} 
+              <AuthorDossier
+                posts={posts}
                 authors={authors}
                 initialSelectedResearcher={dossierSelectedResearcherId}
                 isDark={darkMode}
                 onSelectPost={(id) => {
                   setSelectedPostId(id);
                   setShowDossier(false);
-                }} 
-                onClose={() => setShowDossier(false)} 
+                }}
+                onClose={() => setShowDossier(false)}
               />
             </motion.div>
           ) : selectedPostId && activePost ? (
@@ -1203,7 +1202,7 @@ export default function App() {
               const layout = activePost.layoutMode || 'high-density';
               const themeClasses = getThemeColorClasses(activePost.themeColor, darkMode);
               const isDark = darkMode;
-              
+
               const postPages = activePost.content.split('<!-- pagebreak -->').map(p => p.trim());
               const totalPages = postPages.length;
               const currentPageContent = totalPages > 1 ? postPages[activePostPageIndex] : activePost.content;
@@ -1229,15 +1228,15 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Frosted Glass ambient glows */}
                   {layout === 'frosted-glass' && (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-                      <div 
+                      <div
                         className="absolute -top-12 -left-12 w-96 h-96 rounded-full opacity-10 dark:opacity-[0.08] blur-[120px] transition-colors duration-500"
                         style={{ backgroundColor: themeClasses.accentHex }}
                       />
-                      <div 
+                      <div
                         className="absolute top-1/2 right-10 w-80 h-80 rounded-full opacity-5 dark:opacity-[0.05] blur-[100px] transition-colors duration-500"
                         style={{ backgroundColor: themeClasses.accentHex }}
                       />
@@ -1253,7 +1252,7 @@ export default function App() {
                       <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                       <span>PUBLICATIONS_DATABASE / {activePost.category.toUpperCase()} / {activePost.slug.toUpperCase()}</span>
                     </button>
-                    
+
                     <div className="hidden md:flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
                       <Lock size={11} className="text-emerald-500" />
                       <span>DEPLOYMENT: VERIFIED SIGNED PR MERGE</span>
@@ -1265,11 +1264,11 @@ export default function App() {
                     const renderAuthorMeta = (post: BlogPost, isCentered: boolean = false) => {
                       const btnClass = "hover:text-rose-500 hover:underline transition-colors focus:outline-none font-bold text-slate-700 dark:text-slate-300";
                       const wrapperClass = isCentered ? "flex flex-wrap justify-center items-center gap-1 text-slate-400 font-semibold" : "flex flex-wrap items-center gap-1 text-slate-400 font-semibold";
-                      
+
                       return (
                         <span className={wrapperClass}>
                           <span>By</span>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedPostId(null);
@@ -1284,7 +1283,7 @@ export default function App() {
                           {post.coAuthor && (
                             <>
                               <span className="mx-0.5 text-slate-400">&</span>
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPostId(null);
@@ -1301,7 +1300,7 @@ export default function App() {
                           {post.reviewer && (
                             <span className="text-slate-400 font-normal ml-1">
                               (Reviewed by:{' '}
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPostId(null);
@@ -1349,10 +1348,10 @@ export default function App() {
                                     </div>
                                   ) : (
                                     <div className="rounded-xl overflow-hidden aspect-[21/9] border border-white/20 dark:border-slate-800 shadow-inner relative">
-                                      <ThemeBannerFallback 
-                                        themeColor={activePost.themeColor} 
-                                        category={activePost.category} 
-                                        title={activePost.title} 
+                                      <ThemeBannerFallback
+                                        themeColor={activePost.themeColor}
+                                        category={activePost.category}
+                                        title={activePost.title}
                                         isDark={darkMode}
                                         className="h-full rounded-xl"
                                       />
@@ -1376,15 +1375,15 @@ export default function App() {
 
                             <div className="lg:col-span-4 sticky top-24 space-y-6">
                               {activePost.showToc && (
-                                <TableOfContents 
-                                  content={activePost.content} 
-                                  themeClasses={themeClasses} 
+                                <TableOfContents
+                                  content={activePost.content}
+                                  themeClasses={themeClasses}
                                   postPages={postPages}
                                   currentPageIndex={activePostPageIndex}
                                   onPageChange={setActivePostPageIndex}
                                 />
                               )}
-                              
+
                               <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
                                 <div className="flex items-center gap-2 pb-2 border-b border-white/20 dark:border-slate-800">
                                   <Shield size={16} className={themeClasses.text} />
@@ -1435,10 +1434,10 @@ export default function App() {
                                 </div>
                               ) : (
                                 <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 shadow-sm relative">
-                                  <ThemeBannerFallback 
-                                    themeColor={activePost.themeColor} 
-                                    category={activePost.category} 
-                                    title={activePost.title} 
+                                  <ThemeBannerFallback
+                                    themeColor={activePost.themeColor}
+                                    category={activePost.category}
+                                    title={activePost.title}
                                     isDark={darkMode}
                                     className="h-full rounded-xl"
                                   />
@@ -1478,18 +1477,18 @@ export default function App() {
                       default:
                         return (
                           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                            
+
                             {/* Main Report Body */}
                             <div className="lg:col-span-8 space-y-5">
                               <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
                                 <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
                                   /{activePost.category}
                                 </span>
-                                
+
                                 <h1 className="text-xl md:text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
                                   {activePost.title}
                                 </h1>
-                        
+
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-mono font-medium pt-1">
                                   <div className="flex items-center gap-1.5">
                                     <User size={13} className="text-slate-400" />
@@ -1505,7 +1504,7 @@ export default function App() {
                                   </span>
                                 </div>
                               </div>
-                        
+
                               {activePost.showBanner !== false && (
                                 activePost.bannerImage ? (
                                   <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
@@ -1513,17 +1512,17 @@ export default function App() {
                                   </div>
                                 ) : (
                                   <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
-                                    <ThemeBannerFallback 
-                                      themeColor={activePost.themeColor} 
-                                      category={activePost.category} 
-                                      title={activePost.title} 
+                                    <ThemeBannerFallback
+                                      themeColor={activePost.themeColor}
+                                      category={activePost.category}
+                                      title={activePost.title}
                                       isDark={darkMode}
                                       className="h-full rounded-xl"
                                     />
                                   </div>
                                 )
                               )}
-                        
+
                               {activePost.summary && activePost.showAbstract !== false && (
                                 <div className="bg-slate-100/50 dark:bg-slate-950/20 rounded-xl p-4.5 border border-slate-200 dark:border-slate-800">
                                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Abstract / Executive Summary</h3>
@@ -1532,19 +1531,19 @@ export default function App() {
                                   </p>
                                 </div>
                               )}
-                        
+
                               <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
                                 <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
                                 <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
                               </div>
                             </div>
-                        
+
                             {/* Sidebars */}
                             <div className="lg:col-span-4 sticky top-24 space-y-6">
                               {activePost.showToc && (
-                                <TableOfContents 
-                                  content={activePost.content} 
-                                  themeClasses={themeClasses} 
+                                <TableOfContents
+                                  content={activePost.content}
+                                  themeClasses={themeClasses}
                                   postPages={postPages}
                                   currentPageIndex={activePostPageIndex}
                                   onPageChange={setActivePostPageIndex}
@@ -1579,7 +1578,7 @@ export default function App() {
               );
             })()
           ) : (
-            
+
             /* View Mode: Publications Catalog Screen */
             <motion.div
               key="catalog"
@@ -1588,10 +1587,10 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="space-y-8 animate-fade-in"
             >
-              
+
               {/* Dynamic Branding & Clean Welcome Hero (Purged edit artifacts) */}
               <div className="relative p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1321] overflow-hidden shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                
+
                 {/* Visual subtle geometric background grids */}
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04] bg-grid" />
 
@@ -1629,7 +1628,7 @@ export default function App() {
 
               {/* Main Catalog layout - sleek horizontal top-level navigation */}
               <div className="space-y-6">
-                
+
                 {/* Category select buttons - optimized horizontal navigation */}
                 <div className="bg-white dark:bg-[#0d1321] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-2 px-1 py-1 font-mono text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -1639,11 +1638,10 @@ export default function App() {
                   <div className="flex flex-wrap gap-2 text-xs font-mono">
                     <button
                       onClick={() => { setSelectedCategory('all'); setSelectedSubcategory(null); }}
-                      className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
-                        selectedCategory === 'all' 
-                          ? 'bg-rose-500 text-white font-semibold shadow-sm' 
+                      className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${selectedCategory === 'all'
+                          ? 'bg-rose-500 text-white font-semibold shadow-sm'
                           : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
-                      }`}
+                        }`}
                     >
                       <span>/* (ALL)</span>
                       <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
@@ -1660,11 +1658,10 @@ export default function App() {
                         <button
                           key={idx}
                           onClick={() => { setSelectedCategory(node.slug); setSelectedSubcategory(null); }}
-                          className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
-                            isActive 
-                              ? 'bg-rose-500 text-white font-semibold shadow-sm' 
+                          className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 ${isActive
+                              ? 'bg-rose-500 text-white font-semibold shadow-sm'
                               : 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
-                          }`}
+                            }`}
                         >
                           <span>/{node.slug}</span>
                           <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
@@ -1686,11 +1683,10 @@ export default function App() {
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         onClick={() => setSelectedSubcategory(null)}
-                        className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
-                          selectedSubcategory === null
+                        className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${selectedSubcategory === null
                             ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
                             : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
+                          }`}
                       >
                         Show All
                       </button>
@@ -1700,11 +1696,10 @@ export default function App() {
                           <button
                             key={i}
                             onClick={() => { setSelectedCategory(sub.slug); setSelectedSubcategory(null); }}
-                            className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
-                              isSubActive
+                            className={`text-[10px] font-mono px-2.5 py-1 rounded-md border transition-colors ${isSubActive
                                 ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/30 font-bold'
                                 : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                            }`}
+                              }`}
                           >
                             {sub.label}
                           </button>
@@ -1716,7 +1711,7 @@ export default function App() {
 
                 {/* Main Content: Publications listings list */}
                 <div className="space-y-6">
-                             {/* Search box filters */}
+                  {/* Search box filters */}
                   <div className="flex flex-col md:flex-row items-center gap-4">
                     <div className="relative w-full flex-1">
                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
@@ -1725,12 +1720,11 @@ export default function App() {
                         placeholder="Search publications by title, CVE, MITRE attack tags, or threat actor..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs transition-all outline-none focus:ring-1 focus:ring-rose-500 ${
-                          darkMode ? 'bg-[#0d1321] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'
-                        }`}
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs transition-all outline-none focus:ring-1 focus:ring-rose-500 ${darkMode ? 'bg-[#0d1321] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'
+                          }`}
                       />
                     </div>
-                    
+
                     <div className="flex items-center gap-4 self-stretch md:self-auto justify-end">
                       <div className="text-xs text-slate-400 font-mono whitespace-nowrap">
                         Index view: <span className="text-[#970000] dark:text-[#ff4b4b] font-bold">/{selectedCategory}/*</span>
@@ -1753,16 +1747,15 @@ export default function App() {
                       <p className="text-xs font-mono font-semibold text-slate-400">LOADING_SECURE_COMPILER_DATABASES...</p>
                     </div>
                   ) : filteredPosts.length > 0 ? (
-                    
+
                     /* Listings grid card loop */
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filteredPosts.map((post) => (
                         <div
                           key={post.id}
                           onClick={() => setSelectedPostId(post.id)}
-                          className={`group rounded-xl border overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-md flex flex-col h-full ${
-                            darkMode ? 'bg-[#0d1321] border-slate-800/80 hover:border-slate-700/80' : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
+                          className={`group rounded-xl border overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-md flex flex-col h-full ${darkMode ? 'bg-[#0d1321] border-slate-800/80 hover:border-slate-700/80' : 'bg-white border-slate-200 hover:border-slate-300'
+                            }`}
                         >
                           {post.bannerImage ? (
                             <div className="aspect-[21/9] w-full overflow-hidden border-b border-slate-200 dark:border-slate-800">
@@ -1770,10 +1763,10 @@ export default function App() {
                             </div>
                           ) : (
                             <div className="aspect-[21/9] w-full overflow-hidden border-b border-slate-200 dark:border-slate-800">
-                              <ThemeBannerFallback 
-                                themeColor={post.themeColor} 
-                                category={post.category} 
-                                title={post.title} 
+                              <ThemeBannerFallback
+                                themeColor={post.themeColor}
+                                category={post.category}
+                                title={post.title}
                                 isDark={darkMode}
                                 className="h-full rounded-none"
                               />
@@ -1782,7 +1775,7 @@ export default function App() {
 
                           <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                             <div className="space-y-3">
-                              
+
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                   <span className="font-mono text-[10px] font-bold text-[#970000] dark:text-[#ff4b4b] tracking-wider">
@@ -1795,12 +1788,11 @@ export default function App() {
                                   )}
                                 </div>
                                 {post.threatIntel?.severity && (
-                                  <span className={`text-[8px] px-2 py-0.5 font-mono font-bold uppercase border rounded-md ${
-                                    post.threatIntel.severity === 'critical' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                    post.threatIntel.severity === 'high' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                                    post.threatIntel.severity === 'medium' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                                    'bg-slate-500/10 border-slate-500/20 text-slate-400'
-                                  }`}>
+                                  <span className={`text-[8px] px-2 py-0.5 font-mono font-bold uppercase border rounded-md ${post.threatIntel.severity === 'critical' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                                      post.threatIntel.severity === 'high' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                                        post.threatIntel.severity === 'medium' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                          'bg-slate-500/10 border-slate-500/20 text-slate-400'
+                                    }`}>
                                     {post.threatIntel.severity}
                                   </span>
                                 )}
@@ -1816,7 +1808,7 @@ export default function App() {
                             </div>
 
                             <div className="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPostId(null);
@@ -1856,9 +1848,8 @@ export default function App() {
       </main>
 
       {/* Structured Footer */}
-      <footer className={`mt-16 border-t py-8 text-[10px] font-mono transition-colors ${
-        darkMode ? 'bg-[#0d1321] border-slate-800/80 text-slate-500' : 'bg-white border-slate-200 text-slate-500'
-      }`}>
+      <footer className={`mt-16 border-t py-8 text-[10px] font-mono transition-colors ${darkMode ? 'bg-[#0d1321] border-slate-800/80 text-slate-500' : 'bg-white border-slate-200 text-slate-500'
+        }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <OffSecIntelLogoIcon className="w-5 h-5 p-0.5 rounded" />
