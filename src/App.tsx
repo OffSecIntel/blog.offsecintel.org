@@ -21,7 +21,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
 import { ThemeBannerFallback } from './components/ThemeBannerFallback';
 import { MetaManager } from './services/seo/metaManager';
-<<<<<<< HEAD
 
 const taxonomy = new TaxonomyRegistry(TAXONOMY_NODES);
 try {
@@ -29,8 +28,6 @@ try {
 } catch (err) {
   console.warn("Taxonomy Integrity Check:", err);
 }
-=======
->>>>>>> 04204951374563539fcae44555620d2db0e9a30a
 
 // ----------------------------------------------------------------------
 // Hugo / Jekyll Style Static Markdown Loading Engine
@@ -1051,11 +1048,7 @@ export default function App() {
     }
 
     if (selectedCategory !== 'all') {
-<<<<<<< HEAD
       const catInfo = taxonomy.resolve(selectedCategory);
-=======
-      const catInfo = CATEGORIES_CONFIG.find(c => c.id === selectedCategory);
->>>>>>> 04204951374563539fcae44555620d2db0e9a30a
       MetaManager.updateMeta({
         title: catInfo ? catInfo.label : `${selectedCategory.toUpperCase()} Publications`,
         description: catInfo ? catInfo.description : 'Security advisories and publications.',
