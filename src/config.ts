@@ -37,14 +37,14 @@ export const COLLECTIONS_CONFIG: CollectionConfig[] = [
     visible: true,
     toc: [
       {
-        label: '1. Fundamentals & Analysis Tools',
+        label: 'Fundamentals & Analysis Tools',
         children: [
           { label: 'Environment & Frida Setup', postSlug: 'android-re-setup' },
           { label: 'AppsFlyer & PlayerPrefs Tracking', postSlug: 'appsflyer-playerprefs' }
         ]
       },
       {
-        label: '2. Deep-Dive Case Studies',
+        label: 'Deep-Dive Case Studies',
         children: [
           { label: 'Uncloaking Two-Faced Android Game', postSlug: 'uncloaking-two-faced-android-game-il2cpp' },
           { label: 'Operation DreamBus Campaign', postSlug: 'operation-dreambus-campaign-mapping' }

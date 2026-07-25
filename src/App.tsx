@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BlogPost, AuthorProfile } from './types';
 import { MarkdownRenderer } from './components/MarkdownRenderer';
 import { getThemeColorClasses } from './theme';
@@ -16,7 +16,8 @@ import { CollectionSidebar } from './components/CollectionSidebar';
 import {
   Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye,
   Globe, Activity, AlertTriangle, ExternalLink, Lock, RefreshCw, Layers, Terminal,
-  CheckCircle, ChevronLeft, ChevronRight, Menu, X, Key
+  CheckCircle, ChevronLeft, ChevronRight, Menu, X, Key, BookOpen, ChevronsLeft, ChevronsRight,
+  MoreVertical, ListOrdered, AlignLeft, Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
@@ -86,7 +87,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const showBanner = frontmatter.showBanner !== 'false';
   const layoutMode = (frontmatter.layoutMode as BlogPost['layoutMode']) || 'high-density';
   const themeColor = (frontmatter.themeColor as BlogPost['themeColor']) || 'crimson';
-  const showToc = frontmatter.showToc === 'true';
+  const showToc = frontmatter.showToc !== 'false';
   const showAbstract = frontmatter.showAbstract !== 'false';
   const impactLevel = (frontmatter.impactLevel as BlogPost['impactLevel']) || undefined;
   const coAuthor = frontmatter.coAuthor || undefined;
@@ -266,12 +267,14 @@ export function loadStaticAuthorProfiles(): AuthorProfile[] {
 
 // 1. Table of Contents Component
 export function TableOfContents({
+  id = "in-this-article-section",
   content,
   themeClasses,
   postPages,
   currentPageIndex,
   onPageChange
 }: {
+  id?: string;
   content: string;
   themeClasses: any;
   postPages?: string[];
@@ -360,9 +363,9 @@ export function TableOfContents({
   if (headers.length === 0) return null;
 
   return (
-    <div className="space-y-3.5 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm shadow-sm animate-fade-in">
-      <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
-        Article Outline
+    <div id={id} className="space-y-3.5 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm shadow-sm animate-fade-in">
+      <h4 className="text-xs md:text-sm font-bold text-slate-900 dark:text-white font-sans">
+        In this article
       </h4>
       <nav className="space-y-2 border-l border-slate-200 dark:border-slate-800/80">
         {headers.map((h, i) => (
@@ -572,24 +575,24 @@ export function ArticleIntegrityWidget({ content }: { content: string }) {
     <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-3.5 font-mono text-[11px]">
       <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
         <CheckCircle size={15} className="text-emerald-500 shrink-0" />
-        <h3 className="font-semibold text-slate-900 dark:text-white text-xs font-sans">Publication Integrity Verification</h3>
+        <h3 className="font-semibold text-slate-900 dark:text-white text-xs font-sans">Content Integrity Verification</h3>
       </div>
       <div className="space-y-2.5">
         <div>
-          <span className="text-slate-400 dark:text-slate-500 block text-[9px] uppercase font-bold leading-none mb-1">REAL-TIME CONTENT CHECKSUM (SHA-256)</span>
+          <span className="text-slate-400 dark:text-slate-500 block text-[9px] uppercase font-bold leading-none mb-1">CLIENT-SIDE CHECKSUM (SHA-256)</span>
           <div className="bg-slate-50 dark:bg-slate-900 p-2.5 rounded border border-slate-100 dark:border-slate-800/60 break-all select-all text-[10px] text-slate-600 dark:text-slate-300 font-mono tracking-tight font-medium leading-normal">
             {sha256 || "COMPUTING_INTEGRITY_DIGEST..."}
           </div>
         </div>
         <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono border-t border-slate-100 dark:border-slate-800/50 pt-2">
-          <span>PIPELINE INTEGRITY:</span>
-          <span className="text-emerald-500 font-bold flex items-center gap-1">
+          <span>BUILD PROVENANCE:</span>
+          <span className="text-emerald-500 font-bold flex items-center gap-1 font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            VERIFIED SIGNED MERGE
+            #{typeof __GIT_COMMIT_HASH__ !== 'undefined' ? __GIT_COMMIT_HASH__ : '7df0550'}
           </span>
         </div>
         <div className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
-          This cryptographic digest is dynamically calculated client-side by your browser from the original Markdown payload, guaranteeing that the dispatch content perfectly matches the GPG-signed pull request merged in the authoritative source repository.
+          This SHA-256 cryptographic digest is dynamically calculated client-side via Web Crypto API from the active report payload, verifying document integrity against build release <code className="font-mono text-slate-300">#{typeof __GIT_COMMIT_HASH__ !== 'undefined' ? __GIT_COMMIT_HASH__ : '7df0550'}</code>.
         </div>
       </div>
     </div>
@@ -870,10 +873,33 @@ export default function App() {
   const [dossierSelectedResearcherId, setDossierSelectedResearcherId] = useState<string | null>(null);
   const [authors, setAuthors] = useState<AuthorProfile[]>([]);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [isTocCollapsed, setIsTocCollapsed] = useState<boolean>(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState<boolean>(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState<boolean>(true);
+  const lastScrollY = useRef<number>(0);
 
-  // Reset page index when switching active posts
+  // Mobile header auto-hide on scroll (Deep focus mode, desktop remains stationary)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > 80 && currentY > lastScrollY.current) {
+        setIsHeaderVisible(false);
+      } else {
+        setIsHeaderVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset page index and TOC collapse state when switching active posts
   useEffect(() => {
     setActivePostPageIndex(0);
+    setIsTocCollapsed(false);
+    setIsMobileDrawerOpen(false);
+    setActionMenuOpen(false);
   }, [selectedPostId]);
 
   // Sync theme class
@@ -1112,10 +1138,11 @@ export default function App() {
     <div className={`min-h-screen font-sans transition-colors duration-200 ${darkMode ? 'bg-[#0b0f19] text-slate-200 selection:bg-rose-500/20' : 'bg-[#f8fafc] text-slate-700 selection:bg-rose-500/10'
       }`}>
 
-      {/* Navigation Header */}
-      <header className={`sticky top-0 z-40 border-b transition-colors backdrop-blur ${darkMode ? 'bg-[#0d1321]/90 border-slate-800/80' : 'bg-white/95 border-slate-200/80 shadow-sm'
-        }`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
+      {/* Navigation Header (Auto-hides on mobile scroll, stationary on desktop) */}
+      <header className={`sticky top-0 z-40 border-b transition-transform duration-300 ${
+        isHeaderVisible ? 'translate-y-0' : '-translate-y-full lg:translate-y-0'
+      } backdrop-blur ${darkMode ? 'bg-[#0d1321]/90 border-slate-800/80' : 'bg-white/95 border-slate-200/80 shadow-sm'}`}>
+        <div className="max-w-[1680px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
 
           {/* Brand/Logo */}
           <div onClick={() => { setSelectedPostId(null); setSelectedCategory('all'); setSelectedSubcategory(null); setShowDossier(false); }}>
@@ -1169,7 +1196,7 @@ export default function App() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-[1680px] mx-auto px-4 md:px-8 py-8">
 
         <AnimatePresence mode="wait">
           {showDossier ? (
@@ -1229,7 +1256,7 @@ export default function App() {
                   {layout === 'frosted-glass' && (
                     <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
                       <div
-                        className="absolute -top-12 -left-12 w-96 h-96 rounded-full opacity-10 dark:opacity-[0.08] blur-[120px] transition-colors duration-500"
+                        className="absolute top-1/4 -left-20 w-96 h-96 rounded-full opacity-10 dark:opacity-10 blur-[120px] transition-colors duration-500"
                         style={{ backgroundColor: themeClasses.accentHex }}
                       />
                       <div
@@ -1239,19 +1266,81 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Navigation Path Breadcrumb */}
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800">
+                  {/* Navigation Path Breadcrumb with Contextual Three-Dots Action Menu (...) */}
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 relative">
                     <button
                       onClick={() => setSelectedPostId(null)}
-                      className="flex items-center gap-2 text-xs font-mono font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white group"
+                      className="flex items-center gap-2 text-xs font-mono font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white group truncate max-w-[75%]"
                     >
-                      <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                      <span>PUBLICATIONS_DATABASE / {activePost.category.toUpperCase()} / {activePost.slug.toUpperCase()}</span>
+                      <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform shrink-0" />
+                      <span className="truncate">
+                        Publications / {taxonomy.resolve(activePost.category)?.label || activePost.category}
+                      </span>
                     </button>
 
-                    <div className="hidden md:flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-400">
-                      <Lock size={11} className="text-emerald-500" />
-                      <span>DEPLOYMENT: VERIFIED SIGNED PR MERGE</span>
+                    {/* Contextual Mobile Action Menu (...) */}
+                    <div className="relative lg:hidden">
+                      <button
+                        onClick={() => setActionMenuOpen(!actionMenuOpen)}
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+                        title="More options"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+
+                      {actionMenuOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setActionMenuOpen(false)} />
+                          <div className="absolute right-0 top-full mt-2 w-52 z-50 bg-white dark:bg-[#0d1321] border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-1.5 space-y-1 text-xs font-sans">
+                            {PORTAL_CONFIG.enableCollections && activePost.collection && (
+                              <button
+                                onClick={() => {
+                                  setActionMenuOpen(false);
+                                  setIsMobileDrawerOpen(true);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left font-medium transition-colors"
+                              >
+                                <ListOrdered size={15} className="text-rose-500 shrink-0" />
+                                <span>Table of contents</span>
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setActionMenuOpen(false);
+                                setTimeout(() => {
+                                  let targetEl = document.getElementById('in-this-article-mobile')
+                                              || document.getElementById('in-this-article-desktop')
+                                              || document.getElementById('in-this-article-section');
+                                  if (!targetEl) {
+                                    targetEl = document.querySelector('article h2, main h2, article h1, main h1');
+                                  }
+                                  if (targetEl) {
+                                    const y = targetEl.getBoundingClientRect().top + window.scrollY - 70;
+                                    window.scrollTo({ top: y, behavior: 'smooth' });
+                                  }
+                                }, 50);
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left font-medium transition-colors"
+                            >
+                              <AlignLeft size={15} className="text-cyan-400 shrink-0" />
+                              <span>In this article</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setActionMenuOpen(false);
+                                navigator.clipboard.writeText(window.location.href);
+                                alert('Article link copied to clipboard!');
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left font-medium transition-colors border-t border-slate-100 dark:border-slate-800/60 pt-2"
+                            >
+                              <Copy size={15} className="text-slate-400 shrink-0" />
+                              <span>Copy Link</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -1366,6 +1455,19 @@ export default function App() {
                                         <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-xs md:text-sm">
                                           "{activePost.summary}"
                                         </p>
+                                      </div>
+                                    )}
+
+                                    {/* Mobile "In this article" outline (Matching Microsoft Learn Screenshots 1 & 3) */}
+                                    {activePost.showToc && (
+                                      <div className="lg:hidden">
+                                        <TableOfContents
+                                          content={activePost.content}
+                                          themeClasses={themeClasses}
+                                          postPages={postPages}
+                                          currentPageIndex={activePostPageIndex}
+                                          onPageChange={setActivePostPageIndex}
+                                        />
                                       </div>
                                     )}
 
@@ -1594,6 +1696,7 @@ export default function App() {
                       if (activeCollection) {
                         return (
                           <div className="flex flex-col lg:flex-row gap-8 items-start">
+                            {/* 1. Left TOC Sidebar (Collapsible w-64 <-> w-10) */}
                             <CollectionSidebar
                               collection={activeCollection}
                               currentPostSlug={activePost.slug}
@@ -1605,9 +1708,119 @@ export default function App() {
                                 }
                               }}
                               isDark={darkMode}
+                              posts={posts}
+                              isMobileDrawerOpen={isMobileDrawerOpen}
+                              onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
                             />
-                            <div className="flex-1 w-full min-w-0">
-                              {layoutContent}
+
+                            {/* 2. Central Article Body & Frontmatter (Expands leftward into space vacated by Left TOC) */}
+                            <div className="flex-1 w-full min-w-0 space-y-5">
+                              {/* Metadata & Title Header */}
+                              <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
+                                <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
+                                  /{activePost.category}
+                                </span>
+
+                                <h1 className="text-xl md:text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
+                                  {activePost.title}
+                                </h1>
+
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 font-mono font-medium pt-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <User size={13} className="text-slate-400" />
+                                    {renderAuthorMeta(activePost)}
+                                  </div>
+                                  <span className="flex items-center gap-1.5">
+                                    <Calendar size={13} className="text-slate-400" />
+                                    {activePost.date}
+                                  </span>
+                                  <span className="flex items-center gap-1.5">
+                                    <Clock size={13} className="text-slate-400" />
+                                    {activePost.readTime}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Banner Image */}
+                              {activePost.showBanner !== false && (
+                                activePost.bannerImage ? (
+                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                    <img src={resolveAssetUrl(activePost.bannerImage)} alt={activePost.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  </div>
+                                ) : (
+                                  <div className="rounded-xl overflow-hidden aspect-[21/9] border border-slate-200 dark:border-slate-800 relative">
+                                    <ThemeBannerFallback
+                                      themeColor={activePost.themeColor}
+                                      category={activePost.category}
+                                      title={activePost.title}
+                                      isDark={darkMode}
+                                      className="h-full rounded-xl"
+                                    />
+                                  </div>
+                                )
+                              )}
+
+                              {/* Abstract / Summary */}
+                              {activePost.summary && activePost.showAbstract !== false && (
+                                <div className="bg-slate-100/50 dark:bg-slate-950/20 rounded-xl p-4.5 border border-slate-200 dark:border-slate-800">
+                                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Abstract / Executive Summary</h3>
+                                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed text-xs md:text-sm">
+                                    "{activePost.summary}"
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Mobile "In this article" outline (Matching Microsoft Learn Screenshots 1 & 3) */}
+                              {activePost.showToc && (
+                                <div className="lg:hidden">
+                                  <TableOfContents
+                                    id="in-this-article-mobile"
+                                    content={activePost.content}
+                                    themeClasses={themeClasses}
+                                    postPages={postPages}
+                                    currentPageIndex={activePostPageIndex}
+                                    onPageChange={setActivePostPageIndex}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Markdown Report Body */}
+                              <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
+                                <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
+                                <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
+                              </div>
+                            </div>
+
+                            {/* 3. Right Table of Contents & Parameters (STRICTLY FIXED WIDTH w-72 on Desktop!) */}
+                            <div className="hidden lg:block w-72 shrink-0 sticky top-24 space-y-6">
+                              {activePost.showToc && (
+                                <TableOfContents
+                                  id="in-this-article-desktop"
+                                  content={activePost.content}
+                                  themeClasses={themeClasses}
+                                  postPages={postPages}
+                                  currentPageIndex={activePostPageIndex}
+                                  onPageChange={setActivePostPageIndex}
+                                />
+                              )}
+
+                              <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
+                                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                  <Shield size={16} className={themeClasses.text} />
+                                  <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Security Parameters</h3>
+                                </div>
+                                {activePost.threatIntel ? (
+                                  <ThreatIntelPanel intel={activePost.threatIntel} isSidebar={true} />
+                                ) : (
+                                  <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-mono text-xs">
+                                    NO_VULN_DATA_DECLARED
+                                  </div>
+                                )}
+                              </div>
+
+                              <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} />
+                              <RecentIntelWidget currentPostId={activePost.id} posts={posts} themeClasses={themeClasses} onSelectPost={setSelectedPostId} />
+                              <ArticleIntegrityWidget content={activePost.content} />
                             </div>
                           </div>
                         );
@@ -1635,15 +1848,6 @@ export default function App() {
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.04] bg-grid" />
 
                 <div className="space-y-3.5 relative max-w-2xl">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded border-emerald-500/20 bg-emerald-500/5 text-emerald-500 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      SECURE PIPELINE: VERIFIED GITHUB BUILD
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400 hidden md:inline">
-                      DEPLOYED VIA SIGNED PR MERGE
-                    </span>
-                  </div>
                   <h1 className="text-2xl md:text-3xl font-extrabold font-sans tracking-tight text-slate-900 dark:text-white leading-tight">
                     {PORTAL_CONFIG.subtitle}
                   </h1>
@@ -1937,7 +2141,9 @@ export default function App() {
             <span className="hidden sm:inline text-slate-300 dark:text-slate-800">|</span>
             <span className="flex items-center gap-1.5 text-[9px] sm:text-[10px]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-              <span className="break-all sm:break-normal">PUBLICATION_NODE: VERIFIED GITHUB SIGNED MERGE</span>
+              <span className="break-all sm:break-normal font-mono">
+                BUILD_REF: #{typeof __GIT_COMMIT_HASH__ !== 'undefined' ? __GIT_COMMIT_HASH__ : '7df0550'} · STATIC RELEASE
+              </span>
             </span>
           </div>
         </div>

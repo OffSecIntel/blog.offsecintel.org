@@ -77,9 +77,25 @@ function copyBlogAssetsPlugin(): Plugin {
   };
 }
 
+import { execSync } from 'child_process';
+
+const getGitCommitHash = () => {
+  try {
+    if (process.env.GITHUB_SHA) {
+      return process.env.GITHUB_SHA.substring(0, 7);
+    }
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'dev';
+  }
+};
+
 export default defineConfig(() => {
   return {
     base: './',
+    define: {
+      __GIT_COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
+    },
     plugins: [react(), tailwindcss(), copyBlogAssetsPlugin()],
     resolve: {
       alias: {

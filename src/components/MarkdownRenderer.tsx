@@ -147,42 +147,79 @@ export function MarkdownRenderer({ content, themeColor = 'crimson', isDark = fal
   };
 
   const highlightCode = (code: string, language: string) => {
-    const lines = code.split('\n');
-    return lines.map((line, idx) => {
-      let styledLine: React.ReactNode = line;
-
-      if (language.toLowerCase() === 'bash' || language.toLowerCase() === 'sh') {
+    const lang = language.toLowerCase();
+    
+    if (lang === 'bash' || lang === 'sh') {
+      const lines = code.split('\n');
+      return lines.map((line, idx) => {
         if (line.trim().startsWith('#')) {
-          styledLine = <span className="text-slate-500 italic">{line}</span>;
-        } else {
-          const parts = line.split(' ');
-          const cmd = parts[0];
-          const rest = parts.slice(1).join(' ');
-          styledLine = (
-            <>
-              <span className={themeClasses.primary}>{cmd} </span>
-              <span className="text-slate-300">{rest}</span>
-            </>
+          return <div key={idx} className="text-slate-500 italic">{line}</div>;
+        }
+        const parts = line.split(/(\s+)/);
+        return (
+          <div key={idx}>
+            {parts.map((part, pIdx) => {
+              if (['curl', 'wget', 'pkill', 'chmod', 'service', 'systemctl', 'echo', 'apt-get', 'yum', 'sudo', 'cat', 'grep', 'rm', 'mv'].includes(part.trim())) {
+                return <span key={pIdx} className="text-pink-400 font-semibold">{part}</span>;
+              }
+              if (part.trim().startsWith('--') || part.trim().startsWith('-')) {
+                return <span key={pIdx} className="text-cyan-400">{part}</span>;
+              }
+              if (part.trim().startsWith('http://') || part.trim().startsWith('https://')) {
+                return <span key={pIdx} className="text-amber-300 underline">{part}</span>;
+              }
+              return <span key={pIdx}>{part}</span>;
+            })}
+          </div>
+        );
+      });
+    }
+
+    if (lang === 'http' || lang === 'http-header') {
+      const lines = code.split('\n');
+      return lines.map((line, idx) => {
+        if (line.startsWith('POST ') || line.startsWith('GET ') || line.startsWith('PUT ') || line.startsWith('DELETE ') || line.startsWith('PATCH ')) {
+          return <div key={idx} className="text-emerald-400 font-bold">{line}</div>;
+        }
+        if (line.includes(': ')) {
+          const [key, val] = line.split(': ');
+          return (
+            <div key={idx}>
+              <span className="text-pink-400 font-semibold">{key}</span>: <span className="text-slate-300">{val}</span>
+            </div>
           );
         }
-      } else if (language.toLowerCase() === 'js' || language.toLowerCase() === 'ts') {
-        const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'import', 'export', 'from', 'async', 'await'];
-        const parts = line.split(/(\s+)/);
-        styledLine = parts.map((part, pIdx) => {
-          if (keywords.includes(part.trim())) {
-            return <span key={pIdx} className="text-purple-400 font-bold">{part}</span>;
-          }
-          if (part.startsWith('//')) {
-            return <span key={pIdx} className="text-slate-500 italic">{part}</span>;
-          }
-          return part;
-        });
-      }
+        return <div key={idx} className="text-slate-300">{line}</div>;
+      });
+    }
 
+    const lines = code.split('\n');
+    return lines.map((line, idx) => {
+      if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*')) {
+        return <div key={idx} className="text-slate-500 italic">{line}</div>;
+      }
+      const tokens = line.split(/(\s+|[(),;={}[\]])/);
       return (
         <div key={idx} className="table-row">
           <span className="table-cell text-right pr-4 select-none text-slate-600 text-[11px] font-mono">{idx + 1}</span>
-          <span className="table-cell font-mono">{styledLine}</span>
+          <span className="table-cell font-mono">
+            {tokens.map((tok, tIdx) => {
+              const trimmed = tok.trim();
+              if (['const', 'let', 'var', 'function', 'return', 'import', 'export', 'class', 'interface', 'public', 'private', 'void', 'int', 'char', 'double', 'float', 'if', 'else', 'for', 'while', 'new', 'try', 'catch', 'async', 'await'].includes(trimmed)) {
+                return <span key={tIdx} className="text-pink-400 font-bold">{tok}</span>;
+              }
+              if (trimmed === 'true' || trimmed === 'false' || trimmed === 'null' || trimmed === 'undefined' || /^\d+$/.test(trimmed)) {
+                return <span key={tIdx} className="text-amber-300 font-semibold">{tok}</span>;
+              }
+              if (trimmed.startsWith('"') || trimmed.startsWith("'") || trimmed.startsWith('`')) {
+                return <span key={tIdx} className="text-emerald-400">{tok}</span>;
+              }
+              if (/^[A-Z][a-zA-Z0-9_]*$/.test(trimmed)) {
+                return <span key={tIdx} className="text-cyan-400 font-medium">{tok}</span>;
+              }
+              return <span key={tIdx} className="text-slate-200">{tok}</span>;
+            })}
+          </span>
         </div>
       );
     });
