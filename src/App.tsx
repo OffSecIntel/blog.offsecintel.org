@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
 import { ThemeBannerFallback } from './components/ThemeBannerFallback';
+import { Helmet } from 'react-helmet-async';
 import { MetaManager } from './services/seo/metaManager';
 
 const taxonomy = new TaxonomyRegistry(TAXONOMY_NODES);
@@ -1164,9 +1165,28 @@ export default function App() {
   const criticalThreatsCount = posts.filter(p => p.threatIntel?.severity === 'critical' || p.threatIntel?.severity === 'high').length;
   const threatActorsCount = Array.from(new Set(posts.map(p => p.threatIntel?.threatActor).filter(Boolean))).length;
 
+  const siteTitle = activePost ? `${activePost.title} | OffSecIntel` : 'OffSecIntel — Cyber Security Research & Threat Intelligence';
+  const siteDesc = activePost?.summary || 'Technical publications by OffSecIntel covering vulnerability research, malware reverse engineering, detection engineering, exploit analysis, and cyber threat intelligence.';
+  const siteImg = activePost?.bannerImage 
+    ? `https://blog.offsecintel.org${activePost.bannerImage.startsWith('/') ? '' : '/'}${activePost.bannerImage}` 
+    : 'https://blog.offsecintel.org/blog-assets/malware-re/uncloaking-two-faced-android-game-il2cpp/threat_intel_banner.jpg';
+  const siteUrl = `https://blog.offsecintel.org/${activePost ? '?post=' + activePost.id : ''}`;
+
   return (
     <div className={`min-h-screen font-sans transition-colors duration-200 ${darkMode ? 'bg-[#0b0f19] text-slate-200 selection:bg-rose-500/20' : 'bg-[#f8fafc] text-slate-700 selection:bg-rose-500/10'
       }`}>
+      
+      <Helmet>
+        <title>{siteTitle}</title>
+        <meta name="description" content={siteDesc} />
+        <meta property="og:title" content={siteTitle} />
+        <meta property="og:description" content={siteDesc} />
+        <meta property="og:image" content={siteImg} />
+        <meta property="og:url" content={siteUrl} />
+        <meta name="twitter:title" content={siteTitle} />
+        <meta name="twitter:description" content={siteDesc} />
+        <meta name="twitter:image" content={siteImg} />
+      </Helmet>
 
       {/* Navigation Header (Auto-hides on mobile scroll, stationary on desktop) */}
       <header className={`sticky top-0 z-40 border-b transition-transform duration-300 ${
