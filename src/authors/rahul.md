@@ -3,7 +3,7 @@ id: "rahul"
 name: "Rahul Adhikari"
 alias: "ci9her"
 githubUrl: "https://github.com/ci9her"
-htbUrl: "https://linkedin.com/in/rahuladhikari"
+htbUrl: "https://www.linkedin.com/in/rahul-adhikari-367b12a3/"
 role: "Senior Android Threat Intelligence & Reverse Engineering Specialist"
 specialties: "Android Malware Analysis, Native Code Deobfuscation (IL2CPP/DEX), ARM Assembly, Threat Intelligence & Attribution"
 ---
