@@ -19,7 +19,7 @@ describe('NavDropdown', () => {
     render(
       <NavDropdown 
         item={item as any} 
-        isActive={() => false} 
+        isActive={false} 
         onSelect={mockOnSelect} 
       />
     );
