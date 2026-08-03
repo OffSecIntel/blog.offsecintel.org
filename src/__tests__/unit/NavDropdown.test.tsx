@@ -5,6 +5,7 @@ import { NavDropdown } from '../../components/NavDropdown';
 
 describe('NavDropdown', () => {
   it('renders dropdown and handles clicks', () => {
+    const mockOnSelect = vi.fn();
     const item = {
       slug: 'research',
       label: 'Test Dropdown',
@@ -15,7 +16,13 @@ describe('NavDropdown', () => {
       ]
     };
     
-    render(<NavDropdown item={item as any} />);
+    render(
+      <NavDropdown 
+        item={item as any} 
+        isActive={() => false} 
+        onSelect={mockOnSelect} 
+      />
+    );
     
     // Check title
     expect(screen.getByText('Test Dropdown')).toBeInTheDocument();
