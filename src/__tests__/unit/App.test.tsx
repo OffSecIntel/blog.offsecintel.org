@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { OffSecIntelLogoIcon, TableOfContents, parseMarkdownPost, parseAuthorProfile } from '../../App';
+import { OffSecIntelLogoIcon } from '../../components/widgets/OffSecIntelLogo';
+import { TableOfContents } from '../../components/post/TableOfContents';
+import { parseMarkdownPost, parseAuthorProfile } from '../../utils/parsers';
 
 describe('OffSecIntelLogoIcon', () => {
   it('renders the external logo image by default', () => {
