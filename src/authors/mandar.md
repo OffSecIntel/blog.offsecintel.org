@@ -1,21 +1,20 @@
 ---
 id: "mandar"
-name: "Mandar Kulkarni"
-alias: "mandark"
-githubUrl: "https://github.com/mandarkulkarni"
-htbUrl: "https://in.linkedin.com/in/mandar-kulkarni-aa3859159"
-role: "Principal Cryptography & Hardware Security Architect"
-specialties: "Lattice-Based Cryptography, Trusted Execution Enclaves, Multi-party Computation, Secure Hardware Audits"
+name: "Mandar Jayant Kulkarni"
+alias: "mandarjk"
+githubUrl: "https://github.com/mandarjk"
+htbUrl: "https://www.linkedin.com/in/mandar-kulkarni-aa3859159/"
+role: "Senior Detection Engineer & Cybersecurity Researcher"
+specialties: "Detection Engineering (Sigma, KQL), Advanced Threat Hunting (EDR), Malware Analysis & Reverse Engineering, Threat Intelligence"
 ---
-Mandar Kulkarni leads our research in advanced cryptographic systems, secure hardware architectures, and post-quantum cryptographic migrations. With over a decade of experience in trusted execution technology, he specializes in identifying microarchitectural side-channels in secure enclaves (Intel SGX, AMD SEV) and designing resilient, zero-overhead cryptographic runtimes for multi-tenant cloud ecosystems.
+Mandar Jayant Kulkarni is a Senior Detection Engineer and Cybersecurity Researcher with over 4 years of experience in detection engineering, threat detection, security operations, malware analysis, and managed detection and response (MDR). He is highly experienced in developing and tuning production-grade detections across EDR platforms, translating threat research and attack techniques into high-confidence detection logic, and improving detection coverage through telemetry-driven analysis. Mandar possesses a strong background in MITRE ATT&CK mapping, adversary TTP analysis, Sigma/KQL detection development, threat hunting, and malware reverse engineering.
 
 ## Technical Specialties & Research Areas
 
-* **Post-Quantum Cryptographic Migration:** Leading enterprise readiness assessments and performance modeling of NIST post-quantum signature and key encapsulation schemes (ML-KEM, ML-DSA) across constrained systems.
-* **Hardware-Assisted Security & TEEs:** Reverse engineering, auditing, and hardening trusted hardware interfaces to prevent transient execution attacks and microarchitectural side-channel leakage.
-* **Privacy-Preserving Computation:** Architecting high-performance secure multi-party computation (SMPC) protocols and functional encryption modules for zero-trust federated networks.
+* **Detection Engineering & Threat Hunting:** Extensive experience developing and enhancing tactical detections for Microsoft Defender for Endpoint (MDE) and managing incident analysis with FortiSOAR. Proven success in designing detection logic, suppression rules, and alert grading workflows to reduce false positives by up to 40% and improve signal precision.
+* **Malware Analysis & Reverse Engineering:** Comprehensive static and dynamic analysis of malware utilizing tools like IDA Pro, Ghidra, Procmon, Regedit, Wireshark, Strace, and Process Hacker. Skilled in dissecting emerging threats and investigating complex campaigns such as SOCGholish, Raspberry Robin, and ClickFix.
+* **Threat Intelligence & Telemetry Analysis:** Translating attacker TTPs and Indicators of Compromise (IoCs) into actionable detection insights. Proficient in cross-platform (Windows, Linux, macOS) telemetry-driven analysis, OSINT, Darknet, and TECHINT research to proactively alert on suspicious activities and validate threat detection effectiveness.
 
 ## Technical Publications & Industry Impact
 
-* **"Microarchitectural Vulnerabilities in Post-Quantum Hardware Accelerators"** (Presented at CHES)
-* **"Evaluating ML-KEM Overhead in Hardware-Enforced Sandbox Runtimes"** (Published in Systems & Security Journal)
+* **"Mastering Detection Engineering with Sigma for Cybersecurity"** (System Weakness on Medium) – Delivered actionable guidance on Sigma rule creation, optimization, and detection strategy design to strengthen threat detection capabilities.

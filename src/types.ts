@@ -1,7 +1,8 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+export {};
+
+declare global {
+  const __GIT_COMMIT_HASH__: string;
+}
 
 export interface MITRETechnique {
   tactic: string;
@@ -53,6 +54,7 @@ export interface BlogPost {
   impactLevel?: 'critical' | 'high' | 'medium' | 'low' | 'info';
   coAuthor?: string;
   reviewer?: string;
+  collection?: string;
 }
 
 export interface ExportSettings {

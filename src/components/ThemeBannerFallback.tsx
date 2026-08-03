@@ -1,5 +1,9 @@
 import React from 'react';
 import { getThemeColorClasses } from '../theme';
+import { TAXONOMY_NODES } from '../config';
+import { TaxonomyRegistry } from '../services/taxonomy/registry';
+
+const taxonomy = new TaxonomyRegistry(TAXONOMY_NODES);
 
 interface ThemeBannerFallbackProps {
   themeColor?: string;
@@ -18,13 +22,16 @@ export function ThemeBannerFallback({
 }: ThemeBannerFallbackProps) {
   const theme = getThemeColorClasses(themeColor, isDark);
   
-  // Choose pattern details based on category
+  // Choose pattern details based on category or taxonomy themePattern
   const renderCategoryPattern = () => {
     const primaryColor = theme.accentHex || '#f43f5e';
     const secondaryColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
     const textColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.45)';
 
-    switch (category.toLowerCase()) {
+    const resolvedNode = taxonomy.resolve(category);
+    const patternKey = resolvedNode?.themePattern || (category ? category.toLowerCase() : 'all');
+
+    switch (patternKey) {
       case 'malwarere':
         return (
           <g>

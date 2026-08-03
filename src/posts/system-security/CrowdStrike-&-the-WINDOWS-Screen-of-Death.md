@@ -1,8 +1,8 @@
 ---
 title: Case Study: CrowdStrike and the WINDOWS Screen of Death Mapping
-slug: none
-summary: 
-category: 
+slug: crowdstrike-windows-screen-of-death
+summary: A technical post-mortem analysis of kernel driver channel file updates and system stability.
+category: system-security
 author: Nayan Rande
 date: 2026-07-06
 readTime: 8 min read
