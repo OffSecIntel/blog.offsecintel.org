@@ -42,4 +42,38 @@ describe('MarkdownRenderer', () => {
     expect(htmlOutput).toContain('value');
     expect(htmlOutput).toContain('123');
   });
+
+  it('correctly tokenizes YAML code blocks', () => {
+    const yamlContent = "```yaml\nkey: value\n# comment\n```";
+    const { container } = render(<MarkdownRenderer content={yamlContent} />);
+    const preBlock = container.querySelector('pre');
+    expect(preBlock?.innerHTML).toContain('key');
+  });
+
+  it('correctly tokenizes generic code blocks', () => {
+    const jsContent = "```javascript\nconst a = 1; // comment\n```";
+    const { container } = render(<MarkdownRenderer content={jsContent} />);
+    const preBlock = container.querySelector('pre');
+    expect(preBlock?.innerHTML).toContain('const');
+  });
+
+  it('renders tables correctly', () => {
+    const tableContent = "| Header |\n| --- |\n| Row |";
+    const { container } = render(<MarkdownRenderer content={tableContent} />);
+    expect(container.innerHTML).toContain('Header');
+    expect(container.innerHTML).toContain('Row');
+  });
+
+  it('renders blockquotes correctly', () => {
+    const quoteContent = "> This is a quote";
+    const { container } = render(<MarkdownRenderer content={quoteContent} />);
+    expect(container.innerHTML).toContain('This is a quote');
+  });
+
+  it('renders lists correctly', () => {
+    const listContent = "- Item 1\n- Item 2";
+    const { container } = render(<MarkdownRenderer content={listContent} />);
+    expect(container.innerHTML).toContain('Item 1');
+    expect(container.innerHTML).toContain('Item 2');
+  });
 });
