@@ -17,7 +17,7 @@ import {
   Sun, Moon, Shield, Search, ArrowLeft, Calendar, User, Clock, Eye,
   Globe, Activity, AlertTriangle, ExternalLink, Lock, RefreshCw, Layers, Terminal,
   CheckCircle, ChevronLeft, ChevronRight, Menu, X, Key, BookOpen, ChevronsLeft, ChevronsRight,
-  MoreVertical, ListOrdered, AlignLeft, Copy
+  MoreVertical, ListOrdered, AlignLeft, Copy, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthorDossier } from './components/AuthorDossier';
@@ -272,7 +272,9 @@ export function TableOfContents({
   themeClasses,
   postPages,
   currentPageIndex,
-  onPageChange
+  onPageChange,
+  collapsible = false,
+  defaultCollapsed = false
 }: {
   id?: string;
   content: string;
@@ -280,15 +282,17 @@ export function TableOfContents({
   postPages?: string[];
   currentPageIndex?: number;
   onPageChange?: (pageIndex: number) => void;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }) {
   const [headers, setHeaders] = useState<{ level: number; text: string; id: string; pageIndex: number }[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(defaultCollapsed);
 
   useEffect(() => {
     const extracted: typeof headers = [];
 
     if (postPages && postPages.length > 1) {
-      // Multipage document: parse each page to record the corresponding pageIndex
       postPages.forEach((pageContent, pageIdx) => {
         const lines = pageContent.split('\n');
         let inCodeBlock = false;
@@ -312,7 +316,6 @@ export function TableOfContents({
         }
       });
     } else {
-      // Single-page document: parse entire content
       const lines = content.split('\n');
       let inCodeBlock = false;
       for (let line of lines) {
@@ -362,54 +365,77 @@ export function TableOfContents({
 
   if (headers.length === 0) return null;
 
+  const tocNav = (
+    <nav className="space-y-2 border-l border-slate-200 dark:border-slate-800/80">
+      {headers.map((h, i) => (
+        <a
+          key={i}
+          href={`#${h.id}`}
+          onClick={(e) => {
+            e.preventDefault();
+            const doScroll = () => {
+              const targetEl = document.getElementById(h.id);
+              if (targetEl) {
+                const elementPosition = targetEl.getBoundingClientRect().top + window.scrollY;
+                const offsetPosition = elementPosition - 90;
+                window.scrollTo({
+                  top: offsetPosition,
+                  behavior: 'smooth'
+                });
+              }
+            };
+
+            if (onPageChange && currentPageIndex !== undefined && h.pageIndex !== currentPageIndex) {
+              onPageChange(h.pageIndex);
+              setTimeout(doScroll, 150);
+            } else {
+              doScroll();
+            }
+          }}
+          className={`block text-xs transition-all duration-150 py-0.5 border-l -ml-[1px] leading-tight ${h.level === 1
+              ? 'font-semibold text-slate-900 dark:text-slate-100'
+              : h.level === 2
+                ? 'font-medium text-slate-700 dark:text-slate-300'
+                : h.level === 3
+                  ? 'text-slate-500 dark:text-slate-400 font-normal'
+                  : 'text-slate-400 dark:text-slate-500 italic text-[11px]'
+            } ${activeId === h.id
+              ? `${themeClasses.text} border-rose-500 dark:border-rose-400 font-bold scale-[1.02]`
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+            }`}
+          style={{ paddingLeft: `${(h.level - 1) * 12 + 12}px` }}
+        >
+          {h.text}
+        </a>
+      ))}
+    </nav>
+  );
+
+  if (collapsible) {
+    return (
+      <div id={id} className="rounded-xl border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm shadow-sm animate-fade-in overflow-hidden">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full flex items-center justify-between p-4 text-xs md:text-sm font-bold text-slate-900 dark:text-white font-sans hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+        >
+          <span>In this article</span>
+          <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isCollapsed ? '' : 'rotate-180'}`} />
+        </button>
+        {!isCollapsed && (
+          <div className="px-4 pb-4 space-y-2">
+            {tocNav}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div id={id} className="space-y-3.5 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm shadow-sm animate-fade-in">
       <h4 className="text-xs md:text-sm font-bold text-slate-900 dark:text-white font-sans">
         In this article
       </h4>
-      <nav className="space-y-2 border-l border-slate-200 dark:border-slate-800/80">
-        {headers.map((h, i) => (
-          <a
-            key={i}
-            href={`#${h.id}`}
-            onClick={(e) => {
-              e.preventDefault();
-              const doScroll = () => {
-                const targetEl = document.getElementById(h.id);
-                if (targetEl) {
-                  const elementPosition = targetEl.getBoundingClientRect().top + window.scrollY;
-                  const offsetPosition = elementPosition - 90;
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                  });
-                }
-              };
-
-              if (onPageChange && currentPageIndex !== undefined && h.pageIndex !== currentPageIndex) {
-                onPageChange(h.pageIndex);
-                setTimeout(doScroll, 150);
-              } else {
-                doScroll();
-              }
-            }}
-            className={`block text-xs transition-all duration-150 py-0.5 border-l -ml-[1px] leading-tight ${h.level === 1
-                ? 'font-semibold text-slate-900 dark:text-slate-100'
-                : h.level === 2
-                  ? 'font-medium text-slate-700 dark:text-slate-300'
-                  : h.level === 3
-                    ? 'text-slate-500 dark:text-slate-400 font-normal'
-                    : 'text-slate-400 dark:text-slate-500 italic text-[11px]'
-              } ${activeId === h.id
-                ? `${themeClasses.text} border-rose-500 dark:border-rose-400 font-bold scale-[1.02]`
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              }`}
-            style={{ paddingLeft: `${(h.level - 1) * 12 + 12}px` }}
-          >
-            {h.text}
-          </a>
-        ))}
-      </nav>
+      {tocNav}
     </div>
   );
 }
@@ -599,10 +625,12 @@ export function ArticleIntegrityWidget({ content }: { content: string }) {
   );
 }
 
+import OffSecIntelLogoSvg from "./assets/logo/drawing_NoText.svg";
+
 // Helper component to render the premium logo icon with Fallback
 export function OffSecIntelLogoIcon({ className = "w-9 h-9 p-1" }: { className?: string }) {
   const [useFallback, setUseFallback] = useState(false);
-  const logoUrl = "https://app.offsecintel.org/assets/img/logo/drawing_NoText.svg";
+  const logoUrl = OffSecIntelLogoSvg;
 
   return (
     <div className={`rounded-lg bg-[#970000]/10 border border-[#970000]/20 overflow-hidden flex items-center justify-center shrink-0 ${className}`}>
@@ -877,6 +905,7 @@ export default function App() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [actionMenuOpen, setActionMenuOpen] = useState<boolean>(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState<boolean>(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const lastScrollY = useRef<number>(0);
 
   // Mobile header auto-hide on scroll (Deep focus mode, desktop remains stationary)
@@ -1089,8 +1118,9 @@ export default function App() {
     MetaManager.updateMeta();
   }, [selectedPostId, showDossier, dossierSelectedResearcherId, selectedCategory, loading, posts, authors]);
 
-  // Sync scroll progress on post reader
+  // Sync scroll progress on post reader (only active when reading a post)
   useEffect(() => {
+    if (!selectedPostId) return;
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (totalHeight > 0) {
@@ -1189,7 +1219,7 @@ export default function App() {
 
         {/* Top Progress bar indicator (only visible on post view) */}
         {selectedPostId && activePost && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200/50 dark:bg-slate-800/50 overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200/50 dark:bg-slate-800/50 overflow-hidden hidden lg:block">
             <div className={`h-full ${getThemeColorClasses(activePost.themeColor, darkMode).scrollBar}`} style={{ width: `${scrollProgress}%` }}></div>
           </div>
         )}
@@ -1267,7 +1297,7 @@ export default function App() {
                   )}
 
                   {/* Navigation Path Breadcrumb with Contextual Three-Dots Action Menu (...) */}
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 relative">
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 relative sticky top-0 lg:relative lg:top-auto z-30 bg-[#f8fafc] dark:bg-[#0b0f19] pt-3 lg:pt-0 -mt-3 lg:mt-0">
                     <button
                       onClick={() => setSelectedPostId(null)}
                       className="flex items-center gap-2 text-xs font-mono font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white group truncate max-w-[75%]"
@@ -1331,7 +1361,8 @@ export default function App() {
                               onClick={() => {
                                 setActionMenuOpen(false);
                                 navigator.clipboard.writeText(window.location.href);
-                                alert('Article link copied to clipboard!');
+                                setToastMessage('Link copied to clipboard');
+                                setTimeout(() => setToastMessage(null), 2500);
                               }}
                               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left font-medium transition-colors border-t border-slate-100 dark:border-slate-800/60 pt-2"
                             >
@@ -1462,6 +1493,8 @@ export default function App() {
                                     {activePost.showToc && (
                                       <div className="lg:hidden">
                                         <TableOfContents
+                                          collapsible
+                                          defaultCollapsed
                                           content={activePost.content}
                                           themeClasses={themeClasses}
                                           postPages={postPages}
@@ -1599,7 +1632,7 @@ export default function App() {
                               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                                 {/* Main Report Body */}
                                 <div className="lg:col-span-8 space-y-5">
-                                  <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
+                                  <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-3 md:p-5 rounded-xl shadow-sm">
                                     <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
                                       /{activePost.category}
                                     </span>
@@ -1651,7 +1684,7 @@ export default function App() {
                                     </div>
                                   )}
 
-                                  <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
+                                  <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-3 md:p-5 shadow-inner">
                                     <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
                                     <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
                                   </div>
@@ -1716,7 +1749,7 @@ export default function App() {
                             {/* 2. Central Article Body & Frontmatter (Expands leftward into space vacated by Left TOC) */}
                             <div className="flex-1 w-full min-w-0 space-y-5">
                               {/* Metadata & Title Header */}
-                              <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-sm">
+                              <div className="space-y-3.5 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-3 md:p-5 rounded-xl shadow-sm">
                                 <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${themeClasses.border} ${themeClasses.bgLight} ${themeClasses.text} font-mono`}>
                                   /{activePost.category}
                                 </span>
@@ -1775,6 +1808,7 @@ export default function App() {
                                 <div className="lg:hidden">
                                   <TableOfContents
                                     id="in-this-article-mobile"
+                                    collapsible
                                     content={activePost.content}
                                     themeClasses={themeClasses}
                                     postPages={postPages}
@@ -1785,7 +1819,7 @@ export default function App() {
                               )}
 
                               {/* Markdown Report Body */}
-                              <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-5 shadow-inner">
+                              <div className="py-2 bg-white dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-3 md:p-5 shadow-inner">
                                 <MarkdownRenderer content={currentPageContent} themeColor={activePost.themeColor} isDark={darkMode} />
                                 <TacticalPageNavigator currentPage={activePostPageIndex} totalPages={totalPages} onPageChange={setActivePostPageIndex} />
                               </div>
@@ -1796,6 +1830,7 @@ export default function App() {
                               {activePost.showToc && (
                                 <TableOfContents
                                   id="in-this-article-desktop"
+                                  collapsible
                                   content={activePost.content}
                                   themeClasses={themeClasses}
                                   postPages={postPages}
@@ -2121,7 +2156,7 @@ export default function App() {
       {/* Structured Footer */}
       <footer className={`mt-16 border-t py-8 text-[10px] font-mono transition-colors ${darkMode ? 'bg-[#0d1321] border-slate-800/80 text-slate-500' : 'bg-white border-slate-200 text-slate-500'
         }`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <div className="max-w-[1680px] mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-2.5">
             <OffSecIntelLogoIcon className="w-5 h-5 p-0.5 rounded" />
             <span>{PORTAL_CONFIG.copyright}</span>
@@ -2148,6 +2183,24 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 z-50 right-6 max-lg:right-1/2 max-lg:translate-x-1/2"
+          >
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-medium shadow-2xl border border-slate-700">
+              <CheckCircle size={14} className="text-emerald-400 shrink-0" />
+              <span>{toastMessage}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

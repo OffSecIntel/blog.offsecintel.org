@@ -193,6 +193,68 @@ export function MarkdownRenderer({ content, themeColor = 'crimson', isDark = fal
       });
     }
 
+    // Dedicated Assembly / ARM syntax highlighter
+    if (lang === 'assembly' || lang === 'asm' || lang === 'armasm') {
+      const lines = code.split('\n');
+      return lines.map((line, idx) => {
+        const trimmed = line.trim();
+        // Comment lines
+        if (trimmed.startsWith('//') || trimmed.startsWith(';') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+          return <div key={idx} className="text-slate-500 italic">{line}</div>;
+        }
+        // Tokenize on whitespace, commas, brackets, hash, parens, and colon (splits section:address patterns)
+        const tokens = line.split(/(\s+|[,\[\]#():])/);
+        return (
+          <div key={idx} className="table-row">
+            <span className="table-cell text-right pr-4 select-none text-slate-600 text-[11px] font-mono">{idx + 1}</span>
+            <span className="table-cell font-mono">
+              {tokens.map((tok, tIdx) => {
+                const t = tok.trim();
+                if (!t) return <span key={tIdx}>{tok}</span>;
+                // Hex addresses: 0102c69c, 0x22b9000, 01009700
+                if (/^(?:0x)?[0-9a-fA-F]{6,}$/.test(t)) {
+                  return <span key={tIdx} className="text-amber-300 font-semibold">{tok}</span>;
+                }
+                // ARM registers
+                if (/^(?:x\d{1,2}|w\d{1,2}|sp|lr|pc|fp)$/i.test(t)) {
+                  return <span key={tIdx} className="text-cyan-400">{tok}</span>;
+                }
+                // Mnemonics / instructions
+                if (/^(?:mov|movz|movk|ldr|ldrsw|ldrb|ldrh|str|strb|strh|bl|b|br|adrp|adr|add|sub|cmp|cmn|cbnz|cbz|tbnz|tbz|nop|ret|stp|ldp|svc|mul|madd|and|orr|eor|lsl|lsr|asr|bfxil|ubfx|sbfx|brk|mrs|msr|rev|clz|neg)$/i.test(t)) {
+                  return <span key={tIdx} className="text-pink-400 font-bold">{tok}</span>;
+                }
+                // Labels (LAB_*, FUN_*, thunk_*, SUB_*)
+                if (/^(?:LAB_|FUN_|thunk_|SUB_)\w+/.test(t)) {
+                  return <span key={tIdx} className="text-emerald-400">{tok}</span>;
+                }
+                // Dotted/dollar symbols (System.String$$op_Equality, Main.HTTPSession$$...)
+                if (/^[A-Z][a-zA-Z0-9]+[.$][a-zA-Z]/.test(t)) {
+                  return <span key={tIdx} className="text-cyan-400 font-medium">{tok}</span>;
+                }
+                // Hex immediates: #0x38, #0xd8 (after hash split, this catches 0xNN)
+                if (/^0x[0-9a-fA-F]+$/.test(t)) {
+                  return <span key={tIdx} className="text-amber-300">{tok}</span>;
+                }
+                // Decimal immediates or offset labels: #0, #local_10
+                if (/^#\w+$/.test(t) || /^#$/.test(t)) {
+                  return <span key={tIdx} className="text-amber-200">{tok}</span>;
+                }
+                // Pure numbers (line numbers in assembly listings, small offsets)
+                if (/^\d+$/.test(t)) {
+                  return <span key={tIdx} className="text-amber-300 font-semibold">{tok}</span>;
+                }
+                // Arrow indicator (-> in comments)
+                if (t === '->') {
+                  return <span key={tIdx} className="text-slate-500">{tok}</span>;
+                }
+                return <span key={tIdx} className="text-slate-200">{tok}</span>;
+              })}
+            </span>
+          </div>
+        );
+      });
+    }
+
     const lines = code.split('\n');
     return lines.map((line, idx) => {
       if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*')) {

@@ -7,7 +7,7 @@ htbUrl: "https://linkedin.com/in/rahuladhikari"
 role: "Senior Android Threat Intelligence & Reverse Engineering Specialist"
 specialties: "Android Malware Analysis, Native Code Deobfuscation (IL2CPP/DEX), ARM Assembly, Threat Intelligence & Attribution"
 ---
-Rahul Adhikari is an experienced Senior Security Engineer specializing in Android Threat Intelligence and Reverse Engineering, formerly with the Google Operations Center (GOC). With over eight years of experience in mobile security, malware analysis, and threat intelligence, he focuses on dissecting sophisticated mobile malware targeting native libraries, analyzing obfuscated Android applications, and documenting end-to-end attack chains.
+Rahul Adhikari is an experienced Senior Security Engineer specializing in Android Threat Intelligence and Reverse Engineering, formerly with the Google Operations Center (GOC). With over ten years of experience in mobile security, malware analysis, and threat intelligence, he focuses on dissecting sophisticated mobile malware targeting native libraries, analyzing obfuscated Android applications, and documenting end-to-end attack chains.
 
 ## Technical Specialties & Research Areas
 

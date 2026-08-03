@@ -104,15 +104,27 @@ workspace/
 │   ├── authors/                        <-- Team member profile data (.md)
 │   │   ├── nayan.md                    <-- Nayan Rande's profile & portfolio
 │   │   ├── mandar.md                   <-- Mandar Kulkarni's profile & portfolio
+│   │   ├── rahul.md                    <-- Rahul Adhikari's profile & portfolio
 │   │   └── offsec.md                   <-- General OffSecIntel team profile
 │   ├── components/                     <-- Modular UI units
-│   │   ├── ArticleAssetsWidget.tsx     <-- Newly Added Assets Explorer
-│   │   ├── MarkdownRenderer.tsx
-│   │   └── ThreatIntelPanel.tsx
+│   │   ├── ArticleAssetsWidget.tsx     <-- Assets Explorer sidebar widget
+│   │   ├── CollectionSidebar.tsx       <-- Left-hand collection series navigation
+│   │   ├── MarkdownRenderer.tsx        <-- Markdown → React renderer with syntax highlighting
+│   │   └── ThreatIntelPanel.tsx        <-- Security parameters & IOC display
 │   ├── posts/                          <-- Static markdown publications catalog
-│   │   ├── operation-dreambus-campaign-mapping.md
-│   │   ├── quantum-resistance-cryptographic-enclaves.md
-│   │   └── uncloaking-two-faced-android-game-il2cpp.md
+│   │   ├── malware-re/                 <-- Malware RE category subdirectory
+│   │   │   ├── operation-dreambus-campaign-mapping.md
+│   │   │   └── uncloaking-two-faced-android-game-il2cpp.md
+│   │   ├── crypto-research/            <-- Cryptographic Research category subdirectory
+│   │   │   └── quantum-resistance-cryptographic-enclaves.md
+│   │   ├── system-security/            <-- System Security category subdirectory
+│   │   │   └── CrowdStrike-&-the-WINDOWS-Screen-of-Death.md
+│   │   └── templates/                  <-- Unpublished reference templates
+│   │       └── post-template.md
+│   ├── services/
+│   │   └── taxonomy/                   <-- Pure TS taxonomy engine (zero React deps)
+│   │       ├── registry.ts             <-- TaxonomyRegistry class (O(1) lookups, integrity validation)
+│   │       └── types.ts                <-- TaxonomyNode, NavMenuItem, CollectionConfig interfaces
 │   ├── config.ts                       <-- Site menus and category structures
 │   ├── App.tsx                         <-- Principal client controller
 │   ├── theme.ts                        <-- Responsive theme definitions
@@ -368,3 +380,65 @@ graph TD
 ```
 
 *   **Dynamic Fallback Patterns:** If no `bannerImage` is specified for a post, the `ThemeBannerFallback` component renders an inline SVG layout representing the topic's category. This incorporates category-specific visual motifs (such as a hexagonal mesh with binary streams for malware research, mathematical wave equations for security research, and concentric security enclaves for host security) mapped to the post's exact `themeColor` scheme.
+
+---
+
+## 🎨 9. MarkdownRenderer Syntax Highlighting Architecture
+
+The `MarkdownRenderer` component (`src/components/MarkdownRenderer.tsx`) uses a **chain-of-responsibility** pattern for code block syntax highlighting. Each language handler is an independent `if` block evaluated before the generic fallback, following the **Open/Closed Principle** — new language handlers are added without modifying existing ones.
+
+### Language Handler Chain (Evaluation Order)
+
+| Priority | Language Tags | Handler Description |
+|---|---|---|
+| 1 | `json` | JSON key/value/string/number/boolean coloring |
+| 2 | `yaml`, `yml` | YAML key/value/comment highlighting |
+| 3 | `assembly`, `asm`, `armasm` | Dedicated ARM/assembly syntax highlighter (see below) |
+| 4 | *(fallback)* | Generic tokenizer for JS/TS/Python/C/etc. |
+
+### Assembly Syntax Highlighter Details
+
+The assembly highlighter tokenizes on `(\s+|[,\[\]#():])` — note the `:` in the split set. This is critical for correctly handling disassembler section prefixes (e.g., `il2cpp:0102c82c`, `.text:00401000`) without hardcoding any content-specific strings.
+
+| Token Type | Regex / Match | Color Class |
+|---|---|---|
+| Hex addresses (`0102c82c`, `0x22b9000`) | `/^(?:0x)?[0-9a-fA-F]{6,}$/` | `text-amber-300 font-semibold` |
+| ARM registers (`x0`, `w2`, `sp`, `lr`, `pc`) | `/^(?:x\d{1,2}\|w\d{1,2}\|sp\|lr\|pc\|fp)$/i` | `text-cyan-400` |
+| Mnemonics (`mov`, `ldr`, `bl`, `cmp`, etc.) | Full instruction set regex | `text-pink-400 font-bold` |
+| Labels (`LAB_*`, `FUN_*`, `thunk_*`, `SUB_*`) | `/^(?:LAB_\|FUN_\|thunk_\|SUB_)\w+/` | `text-emerald-400` |
+| Dotted/dollar symbols (`Main.NetworkManager$$...`) | `/^[A-Z][a-zA-Z0-9]+[.$][a-zA-Z]/` | `text-cyan-400 font-medium` |
+| Hex immediates (`0x38`, `0xd8`) | `/^0x[0-9a-fA-F]+$/` | `text-amber-300` |
+| Comments (`//`, `;`, `/*`) | Line-level prefix match | `text-slate-500 italic` |
+| Default tokens | *(no match)* | `text-slate-200` |
+
+### Design Decision: `:` in the Tokenizer Split Set
+The colon character is included in the tokenizer's split regex to generically handle disassembler section prefixes (e.g., `il2cpp:`, `.text:`, `segment:`). This splits `il2cpp:0102c82c` into three tokens (`il2cpp`, `:`, `0102c82c`), allowing the hex address to match the address regex independently. This is a **universal** solution that works for any disassembler output format without content-specific hardcoding.
+
+---
+
+## 📑 10. Collapsible TableOfContents Component API
+
+The `TableOfContents` component supports both fully-expanded and collapsible accordion rendering modes via two boolean props:
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `collapsible` | `boolean` | `false` | When `true`, wraps the TOC in a clickable accordion header with a ChevronDown toggle icon. |
+| `defaultCollapsed` | `boolean` | `false` | When `true`, the accordion starts in the collapsed state. Only meaningful when `collapsible` is also `true`. |
+
+### Usage Patterns
+
+```tsx
+{/* Desktop right sidebar — collapsible, expanded by default */}
+<TableOfContents collapsible content={...} themeClasses={...} />
+
+{/* Mobile inline — collapsible, collapsed by default */}
+<TableOfContents collapsible defaultCollapsed content={...} themeClasses={...} />
+
+{/* Legacy non-collapsible — fully expanded, no toggle */}
+<TableOfContents content={...} themeClasses={...} />
+```
+
+### Rendering Logic
+- **`collapsible=false`**: Renders a static card with "In this article" heading and the full TOC nav tree.
+- **`collapsible=true`**: Renders a button-header accordion. Clicking toggles `isCollapsed` state. The nav tree is conditionally rendered below the header.
+- **Active header tracking**: Scroll-spy highlights the currently visible header with `border-rose-500` and the post's theme accent color.

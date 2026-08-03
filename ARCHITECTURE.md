@@ -133,7 +133,7 @@ npm run dev
 
 ---
 
-## 6. Commit Message & PR Standards
+## 7. Commit Message & PR Standards
 
 All commits must follow GitHub Desktop style with a single summary line and detailed body:
 
@@ -145,3 +145,54 @@ refactor: implement hierarchical taxonomy registry and data-driven routing
 - Update index.html and MetaManager title to "OffSecIntel — Cyber Security Research & Threat Intelligence".
 - Decouple navigation menu from taxonomy tree via NAVIGATION_CONFIG and NavDropdown.
 ```
+
+---
+
+## 8. Post Directory Convention
+
+Blog posts are organized into **category-based subdirectories** under `src/posts/`:
+
+```
+src/posts/
+├── malware-re/                 <-- Malware RE leaf category
+│   ├── operation-dreambus-campaign-mapping.md
+│   └── uncloaking-two-faced-android-game-il2cpp.md
+├── crypto-research/            <-- Cryptographic Research leaf category
+│   └── quantum-resistance-cryptographic-enclaves.md
+├── system-security/            <-- System Security leaf category
+│   └── CrowdStrike-&-the-WINDOWS-Screen-of-Death.md
+└── templates/                  <-- Unpublished reference templates (published: false)
+    └── post-template.md
+```
+
+**Convention Rules:**
+1. The subdirectory name **must match** the post's `category` frontmatter value (using the taxonomy leaf slug, not pillar slug).
+2. The file name should be the post's `slug` value with a `.md` extension.
+3. The `templates/` directory holds unpublished blueprints (`published: false`, `draft: true`).
+4. Vite's `import.meta.glob` recursively loads all `src/posts/**/*.md` files at build time — subdirectory depth is irrelevant to the loader.
+
+---
+
+## 9. MarkdownRenderer Language Handler Architecture
+
+The `MarkdownRenderer` (`src/components/MarkdownRenderer.tsx`) uses a **chain-of-responsibility** pattern for syntax highlighting. Each language handler is an independent code path evaluated before the generic fallback, adhering to the **Open/Closed Principle**.
+
+### Handler Chain (Evaluation Order)
+
+```
+Code Block → JSON handler? → YAML handler? → Assembly handler? → Generic fallback
+```
+
+### Supported Code Block Language Tags
+
+| Language Tag(s) | Handler | Key Features |
+|---|---|---|
+| `json` | Dedicated | Key (cyan), string (emerald), number (amber), boolean (pink) |
+| `yaml`, `yml` | Dedicated | Key (cyan), value (emerald), comment (slate italic) |
+| `assembly`, `asm`, `armasm` | Dedicated | Hex addresses (amber), registers (cyan), mnemonics (pink), labels (emerald) |
+| All others (`js`, `ts`, `python`, `bash`, etc.) | Generic | Keywords, strings, comments, numbers, types via regex tokenizer |
+
+### Assembly Tokenizer Design
+
+The assembly tokenizer splits on `(\s+|[,\[\]#():])` — the `:` in the split set is a deliberate design choice that generically handles any disassembler section prefix (e.g., `il2cpp:`, `.text:`, `segment:`) without content-specific hardcoding.
+

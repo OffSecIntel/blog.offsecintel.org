@@ -69,10 +69,11 @@ To ensure the publication layout feels polished and clinical across all screen s
 
 ---
 
-## ✍️ How to Add a New Blog Post
-All blog posts are parsed from standalone markdown files inside **`src/posts/`**:
-1.  Create a `.md` file inside `src/posts/` (e.g., `src/posts/new-vulnerability.md`).
-2.  Add a standard YAML frontmatter block to declare post variables, severity tiers, and MITRE mapping:
+## ✍️ 7. How to Add a New Blog Post
+All blog posts are parsed from standalone markdown files inside **category-based subdirectories** under **`src/posts/`**:
+1.  Identify your post's category (e.g., `malwarere`, `research`, `security`).
+2.  Create a `.md` file inside the corresponding subdirectory (e.g., `src/posts/malware-re/new-vulnerability.md`). If the directory doesn't exist, create it.
+3.  Add a standard YAML frontmatter block to declare post variables, severity tiers, and MITRE mapping:
     ```yaml
     ---
     title: Uncloaking the Two-Faced Android Game
@@ -93,7 +94,10 @@ All blog posts are parsed from standalone markdown files inside **`src/posts/`**
     threatIntel.severity: critical
     ---
     ```
-3.  Save the file. It will be immediately compiled and registered into the interactive catalog interface.
+4.  Save the file. It will be immediately compiled and registered into the interactive catalog interface.
+
+> [!TIP]
+> **Code Block Syntax Highlighting:** Use specific language tags in your markdown code blocks for optimal coloring: `assembly` (or `asm`, `armasm`), `json`, `yaml`, `ts`, `python`, etc. See `CONTENT_GUIDELINES.md` for a full authoring guide.
 
 ---
 
