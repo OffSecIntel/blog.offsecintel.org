@@ -24,14 +24,7 @@ import {
   FolderLock
 } from "lucide-react";
 import { AssetManager } from "../utils/AssetManager";
-
-interface Asset {
-  name: string;
-  size: number;
-  type: string;
-  url: string;
-  updatedAt: string;
-}
+import { Asset } from "../types";
 
 interface ArticleAssetsWidgetProps {
   postSlug: string;
