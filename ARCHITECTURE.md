@@ -6,21 +6,63 @@ This document defines the high-level technical architecture, design patterns, ta
 
 ## 1. Architectural Principles
 
-1. **Pure Vanilla TypeScript Core (Zero Library Bloat)**:
-   All business logic, taxonomy registries, URL parsers, SEO meta tag managers, and Markdown AST generators are built in pure Vanilla TypeScript with **zero framework dependencies**. This guarantees lightning-fast execution and easy migration to static site generator (SSG) frameworks like Jekyll, Hugo, or custom compilers.
+## Frontend Application Architecture (React / Vite)
 
-2. **Strict UI Layer vs. Service Layer Separation**:
-   - **Configuration Layer (`src/config.ts`)**: Pure JSON/TypeScript data schemas (`TAXONOMY_NODES`, `NAVIGATION_CONFIG`, `PORTAL_CONFIG`, `COLLECTIONS_CONFIG`).
-   - **Service Layer (`src/services/`)**: Pure TypeScript classes (`TaxonomyRegistry`, `MetaManager`, `MarkdownParser`). Zero React or DOM rendering concerns.
-   - **UI Layer (`src/components/`, `src/theme.ts`)**: Presentation-only React 19 components consuming data provided by the service layer.
+The frontend is a fully static, client-side rendered Single Page Application (SPA) built with React 19 and Vite.
 
-3. **Convention Over Configuration for Post Frontmatter**:
-   Markdown authors write clean frontmatter (`category: malware-re`, `collections: [crux]`). The taxonomy registry automatically resolves ancestral nodes, SEO metadata, theme patterns, and researcher specialty labels.
+### Core Architecture
 
-4. **Security Boundaries & Integrity Assertions**:
-   - **Security Boundary**: The `published: false` flag in markdown frontmatter. Posts with `published: false` are excluded during compilation and never ship in production build artifacts.
-   - **UI Presentation Flag**: `visible: boolean` in taxonomy nodes and navigation items controls UI visibility.
-   - **Integrity Assertion**: `TaxonomyRegistry.validateIntegrity()` runs at startup to catch circular parent chains, orphaned nodes, duplicate aliases, and hidden parent chains.
+- **State Management**: React Context API (`src/context/AppContext.tsx`) provides localized global state for themes, active datasets, and UI toggles without massive prop-drilling.
+- **Routing Engine**: `src/hooks/useAppRouter.ts` handles browser popstate, hash navigation (`#?post=xyz`), and query parameter synchronization for GitHub Pages compatibility.
+- **Markdown Hydration**: Articles are requested over HTTP as raw `.md` strings and processed client-side via custom parsers (`src/utils/parsers.ts`).
+
+### Directory Structure
+
+The UI components are decoupled by domain responsibility, with every individual feature and functionality meticulously documented:
+
+1. **`src/components/layout/`**: Top-level macro components.
+   - **`AppHeader.tsx`**: 
+     - **Navigation Links**: Routes to Home, Research, Engineering, etc.
+     - **Mobile Menu**: Responsive hamburger menu that reveals full navigation on small screens.
+     - **Search Bar Toggle**: Initiates the global publication search filter.
+     - **Theme Toggle (Dark/Light Mode)**: UI/UX toggle. By default, the app initializes the theme based on the user's OS system preferences (`prefers-color-scheme: dark`), but can be manually overridden and persisted.
+     - **Reading Progress Bar**: A dynamic horizontal progress bar pinned to the top, showing how far a user has scrolled down a post.
+   - **`AppFooter.tsx`**: 
+     - **Branding**: Static copyright and organization branding.
+     - **Utility Links**: Links to privacy policies, GitHub, and external socials.
+
+2. **`src/components/post/`**: The core domain views.
+   - **`PostDashboard.tsx`**: 
+     - **Catalog Grid**: The primary layout rendering available threat intelligence reports in responsive cards.
+     - **Category Filtering**: Renders clickable tags to filter the grid by high-level taxonomy (e.g. `malware-re`, `cryptography`).
+     - **Search Integration**: Reacts to the global search query to filter posts by title, summary, CVEs, or threat actors.
+     - **Dossier Trigger**: Clicking an author opens their `AuthorDossier` overlay.
+   - **`PostViewer.tsx`**: 
+     - **Markdown Hydration**: Intercepts the raw `.md` content and delegates rendering to `MarkdownRenderer`.
+     - **Draft Mode Banner**: Displays a bright orange warning banner if a post is marked `published: false` (only visible in dev).
+     - **Fallback Hero Generation**: If a post lacks a specific banner image, dynamically invokes `ThemeBannerFallback` to generate an algorithmic geometric header.
+   - **`TableOfContents.tsx`**: 
+     - **Scroll Spy**: Auto-highlights the current section in the sidebar as the user scrolls through a report.
+     - **Smooth Scrolling**: Intercepts anchor links to smoothly scroll the window to the target heading.
+
+3. **`src/components/widgets/`**: Reusable isolated display logic.
+   - **`RecentIntelWidget.tsx`**: A sidebar widget highlighting the 3 most recently published reports.
+   - **`ImpactLevelRibbon.tsx`**: A purely visual component rendering color-coded severity ribbons (Critical/High/Medium/Low).
+   - **`ArticleIntegrityWidget.tsx`**: Performs client-side SHA-256 validation of the article content to prove it hasn't been tampered with.
+   - **`OffSecIntelLogo.tsx`**: The SVG vector graphic of the organization's logo.
+
+4. **`src/context/`**: Global Providers.
+   - **`AppContext.tsx`**: Provides the top-level React Context. Stores the initialized `darkMode` state, the loaded `posts`, and the `authors` directory, mitigating prop-drilling across the app.
+
+5. **`src/hooks/`**: Custom React Hooks.
+   - **`useAppRouter.ts`**: The core routing engine.
+     - **Popstate Listener**: Intercepts browser back/forward buttons to natively restore previous views.
+     - **URL Hash Syncing**: Translates internal app states (like `selectedPostId` or `showDossier`) into clean URL hashes (`#?post=xyz`) so URLs are shareable and bookmarkable on GitHub Pages.
+
+6. **`src/utils/` & `src/services/`**: 
+   - **Taxonomy Registries**: Resolves slugs into readable categories.
+   - **SEO Meta Managers**: Dynamically injects `<title>` and OpenGraph `<meta>` tags when a post is opened.
+   - **Data Normalizers**: Parses frontmatter strings into strict TypeScript objects.
 
 ---
 

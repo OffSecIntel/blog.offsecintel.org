@@ -1,0 +1,56 @@
+import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { AppHeader } from '../../src/components/layout/AppHeader';
+import { AppProvider } from '../../src/context/AppContext';
+
+describe('AppHeader', () => {
+  it('renders header components', () => {
+    const setMenu = vi.fn();
+    
+    render(
+      <AppProvider>
+        <AppHeader 
+          isHeaderVisible={true} 
+          scrollProgress={50} 
+        />
+      </AppProvider>
+    );
+
+    expect(screen.getByText('Research')).toBeInTheDocument();
+  });
+
+  it('handles dark mode toggle', () => {
+    const setMenu = vi.fn();
+    
+    render(
+      <AppProvider>
+        <AppHeader 
+          isHeaderVisible={true} 
+          scrollProgress={0} 
+        />
+      </AppProvider>
+    );
+
+    const darkModeBtn = screen.queryByTitle('Switch to Light Mode') || screen.getByTitle('Switch to Dark Mode');
+    expect(darkModeBtn).toBeInTheDocument();
+    
+    fireEvent.click(darkModeBtn);
+  });
+
+  it('renders mobile menu button', () => {
+    const setMenu = vi.fn();
+    
+    render(
+      <AppProvider>
+        <AppHeader 
+          isHeaderVisible={true} 
+          scrollProgress={0} 
+        />
+      </AppProvider>
+    );
+
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(0);
+  });
+});

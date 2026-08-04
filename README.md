@@ -24,8 +24,13 @@ To support clinical, in-depth malware analyses and systems research, each blog p
     *   **Paste & Revise:** Paste this link straight into your markdown file. It resolves using relative paths, guaranteeing perfect cross-compatibility between local previews and production builds.
 3.  **Phase 3 — Git Check-In & Static Asset Commitment:**
     Commit both the completed article markdown and the newly populated `blog-assets/<slug>/` folder to your Git repository.
-4.  **Phase 4 — Zero-Overhead Production Asset Bundling:**
     When the portal is compiled for production (`npm run build` or GitHub Actions), a custom Vite build plugin (`copyBlogAssetsPlugin` in `vite.config.ts`) automatically copies the `blog-assets/` directory into `dist/blog-assets/`. When deployed to GitHub Pages or static hosts, all publication images (such as `threat_intel_banner.jpg`), Frida scripts, and analysis artifacts are served statically with 100% reliability and zero 404 errors!
+
+5.  **Phase 5 — Advanced Asset Visibility & Malware Controls:**
+    The portal uses a smart "Convention + Configuration" hybrid to determine what assets are visible:
+    *   **Zero-Config Folders:** By default, files in `/downloads/` or `/public/` are shown. Files in `/private/` are hidden.
+    *   **Live Malware Safety:** Any executable file (`.apk`, `.exe`, `.vbs`, etc.) is automatically flagged as a `MALWARE_SAMPLE` and placed in a high-visibility, red advisory box.
+    *   **Explicit Configuration:** Authors can use `hiddenAssets: ['filename.png']` in the markdown frontmatter to explicitly hide specific files. If the executables are benign, authors can use `containsLiveMalware: false` to disable the malware advisory box entirely.
 
 
 ---
