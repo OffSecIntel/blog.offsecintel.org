@@ -73,6 +73,44 @@ function copyBlogAssetsPlugin(): Plugin {
       if (fs.existsSync(srcDir)) {
         fs.cpSync(srcDir, distDir, { recursive: true });
         console.log(`[copy-blog-assets] Successfully copied blog-assets to dist/blog-assets`);
+        
+        // Generate static assets.json fallback for each post directory
+        const getFilesRecursive = (dir: string, baseDir: string): { name: string, type: string, size: number, url: string }[] => {
+          let results: any[] = [];
+          if (!fs.existsSync(dir)) return results;
+          const list = fs.readdirSync(dir);
+          list.forEach(file => {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+            if (stat && stat.isDirectory()) {
+              results = results.concat(getFilesRecursive(filePath, baseDir));
+            } else {
+              const relPath = path.relative(baseDir, filePath).replace(/\\/g, '/');
+              const ext = path.extname(file).toLowerCase();
+              let type = "file";
+              if ([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"].includes(ext)) type = "image";
+              else if ([".js", ".ts", ".py", ".sh", ".json", ".txt", ".csv"].includes(ext)) type = "code";
+              
+              results.push({
+                name: relPath,
+                size: stat.size,
+                type,
+                url: `/blog-assets/${relPath}`
+              });
+            }
+          });
+          return results;
+        };
+
+        const postFolders = fs.readdirSync(srcDir);
+        postFolders.forEach(folder => {
+          const folderPath = path.join(srcDir, folder);
+          if (fs.statSync(folderPath).isDirectory()) {
+            const assetsList = getFilesRecursive(folderPath, srcDir);
+            fs.writeFileSync(path.join(distDir, folder, 'assets.json'), JSON.stringify(assetsList, null, 2));
+            console.log(`[copy-blog-assets] Generated assets.json for ${folder}`);
+          }
+        });
       }
     }
   };
