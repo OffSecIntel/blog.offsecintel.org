@@ -1,0 +1,36 @@
+name: CI Verification
+
+on:
+  pull_request:
+    branches: ["main", "master", "dev"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Verify Types (Lint)
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Build Static Artifacts
+        run: npm run build
+
+      - name: Verify Asset Integrity
+        run: node scripts/verify-build-assets.js
