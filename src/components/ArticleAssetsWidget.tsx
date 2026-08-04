@@ -46,11 +46,16 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
   const [showApks, setShowApks] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch assets list from server
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/posts/${postSlug}/assets`);
+      let res = await fetch(`/api/posts/${postSlug}/assets`);
+      
+      // Fallback for GitHub Pages (Static Hosting) where the Express API is offline
+      if (!res.ok) {
+        res = await fetch(`/blog-assets/${postSlug}/assets.json`);
+      }
+      
       if (res.ok) {
         const data = await res.json();
         setAssets(data);

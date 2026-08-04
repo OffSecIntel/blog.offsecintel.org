@@ -174,6 +174,10 @@ This portal follows a highly elegant, local-first hybrid model:
 *   **The Developer's Workstation (Local Dev):** You run the local Express server (`npm run dev`) on your machine. This gives you the full-featured, local-only staging environment where you can use the **Threat Intel Assistant** and the **Post Assets & Artifacts** upload API to manage and stage your decompiled files, scripts, and diagrams inside the repository.
 *   **Production Deployment (Static Hosting):** Once you check your finished posts and assets into Git, they are built and served statically. There is no live database or server-side script running in production. This guarantees maximum security (no server vector to attack), lightning-fast loading speeds, and 100% free global hosting!
 
+> [!IMPORTANT]
+> **Static Asset Discovery (The GitHub Pages Dilemma):** 
+> Static hosts (like GitHub Pages) cannot respond to dynamic API requests like `/api/posts/<slug>/assets`. To solve this, our Vite build process (`vite.config.ts`) automatically generates a static `assets.json` registry file inside every post's `blog-assets` folder during compilation. The frontend widget automatically falls back to fetching this static JSON file when the live API is offline, ensuring zero data loss on GitHub Pages!
+
 ### 2. Smart SPA Routing & Refresh-Safety
 Standard Single Page Applications (SPAs) that use pathname-based routing (e.g., `/MalwareRE`) will break with a standard `404 Not Found` error when a user refreshes the page on static servers like GitHub Pages, since the directories do not physically exist on the server.
 *   **Automatic Host Detection:** The router inside OffSecIntel automatically detects if the site is running in a static GitHub Pages environment (e.g., under a `.github.io` subdomain or nested repository path).
@@ -195,6 +199,14 @@ If you prefer to compile the static application locally and manually deploy the 
     ```
 2.  All compile assets are outputted inside the `/dist/` folder.
 3.  Upload the contents of the `/dist/` folder directly to GitHub Pages, Netlify, Vercel, or any static file host of your choice.
+
+---
+
+## 🏗️ Modularity & Testability Standards
+To ensure the codebase scales safely without degrading maintainability:
+*   **Encapsulate Complex Logic:** Avoid monolithic inline code additions inside React components. Complex operations (like asset fetching algorithms, data transformations, or API fallbacks) MUST be extracted into dedicated modules inside `src/utils/` or `src/services/`.
+*   **Component Isolation:** Keeping logic outside the UI components guarantees that algorithms can be easily isolated and tested via unit test suites without rendering full, heavy React component trees.
+*   **Test-Driven Refactoring:** All logic abstractions must be accompanied by comprehensive tests in the root `__tests__/` directory.
 
 ---
 
