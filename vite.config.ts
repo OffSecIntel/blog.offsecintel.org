@@ -71,46 +71,56 @@ function copyBlogAssetsPlugin(): Plugin {
       const srcDir = path.resolve(__dirname, 'blog-assets');
       const distDir = path.resolve(__dirname, 'dist', 'blog-assets');
       if (fs.existsSync(srcDir)) {
+        // Keep raw copy for Banners/Images
         fs.cpSync(srcDir, distDir, { recursive: true });
         console.log(`[copy-blog-assets] Successfully copied blog-assets to dist/blog-assets`);
         
-        // Generate static assets.json fallback for each post directory
-        const getFilesRecursive = (dir: string, baseDir: string): { name: string, type: string, size: number, url: string }[] => {
+        // Generate Global Static assets-registry.json for AssetManager
+        const getFilesInSlugDir = (slugDir: string, rootDir: string): any[] => {
           let results: any[] = [];
-          if (!fs.existsSync(dir)) return results;
-          const list = fs.readdirSync(dir);
-          list.forEach(file => {
-            const filePath = path.join(dir, file);
-            const stat = fs.statSync(filePath);
-            if (stat && stat.isDirectory()) {
-              results = results.concat(getFilesRecursive(filePath, baseDir));
-            } else {
-              const relPath = path.relative(baseDir, filePath).replace(/\\/g, '/');
-              const ext = path.extname(file).toLowerCase();
-              let type = "file";
-              if ([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"].includes(ext)) type = "image";
-              else if ([".js", ".ts", ".py", ".sh", ".json", ".txt", ".csv"].includes(ext)) type = "code";
-              
-              results.push({
-                name: relPath,
-                size: stat.size,
-                type,
-                url: `/blog-assets/${relPath}`
-              });
-            }
-          });
+          const traverse = (currentDir: string) => {
+            const list = fs.readdirSync(currentDir);
+            list.forEach(file => {
+              const filePath = path.join(currentDir, file);
+              const stat = fs.statSync(filePath);
+              if (stat.isDirectory()) traverse(filePath);
+              else {
+                const relToSlug = path.relative(slugDir, filePath).replace(/\\/g, '/');
+                const relToRoot = path.relative(rootDir, filePath).replace(/\\/g, '/');
+                const ext = path.extname(file).toLowerCase();
+                let type = "file";
+                if ([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"].includes(ext)) type = "image";
+                else if ([".js", ".ts", ".py", ".sh", ".json", ".txt", ".csv"].includes(ext)) type = "code";
+                
+                results.push({
+                  name: relToSlug,
+                  size: stat.size,
+                  type,
+                  url: `/blog-assets/${relToRoot}`
+                });
+              }
+            });
+          };
+          traverse(slugDir);
           return results;
         };
 
-        const postFolders = fs.readdirSync(srcDir);
-        postFolders.forEach(folder => {
-          const folderPath = path.join(srcDir, folder);
-          if (fs.statSync(folderPath).isDirectory()) {
-            const assetsList = getFilesRecursive(folderPath, srcDir);
-            fs.writeFileSync(path.join(distDir, folder, 'assets.json'), JSON.stringify(assetsList, null, 2));
-            console.log(`[copy-blog-assets] Generated assets.json for ${folder}`);
+        const registry: Record<string, any[]> = {};
+        const scanForSlugs = (currentDir: string) => {
+          if (!fs.existsSync(currentDir)) return;
+          const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              const fullPath = path.join(currentDir, entry.name);
+              registry[entry.name] = getFilesInSlugDir(fullPath, srcDir);
+              scanForSlugs(fullPath);
+            }
           }
-        });
+        };
+        
+        scanForSlugs(srcDir);
+        fs.writeFileSync(path.join(distDir, 'assets-registry.json'), JSON.stringify(registry, null, 2));
+        console.log(`[copy-blog-assets] Generated unified assets-registry.json`);
       }
     }
   };
