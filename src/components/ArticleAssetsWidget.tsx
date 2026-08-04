@@ -305,7 +305,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <Download size={12} className="shrink-0" />
-                    <span className="truncate">{apk.name}</span>
+                    <span className="truncate">{apk.name.split('/').pop()}</span>
                   </div>
                   <span className="text-[9px] bg-rose-600 dark:bg-rose-700 px-1.5 py-0.5 rounded text-white/90 shrink-0">
                     {formatSize(apk.size)}
@@ -322,7 +322,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
         <div className="flex justify-center items-center py-6">
           <Loader2 className={`animate-spin ${colors.text}`} size={16} />
         </div>
-      ) : assets.length === 0 ? (
+      ) : displayAssets.length === 0 ? (
         <div className="text-center py-6 border border-dashed border-slate-100 dark:border-slate-800/50 rounded-lg bg-slate-50/20 dark:bg-slate-950/10">
           <p className="text-[10px] text-slate-400 font-mono font-bold uppercase">NO_INDEXED_ARTIFACTS</p>
           <p className="text-[9.5px] text-slate-450 dark:text-slate-500 mt-1 max-w-[210px] mx-auto leading-relaxed">
@@ -333,7 +333,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
         </div>
       ) : (
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-          {assets.map((asset, index) => {
+          {displayAssets.map((asset, index) => {
             const isImg = asset.type === "image";
             const isApk = asset.name.toLowerCase().endsWith(".apk");
             const isDeleting = deletingName === asset.name;
