@@ -120,9 +120,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     let searchStr = searchParams.toString();
-    if (searchStr.includes('author=')) {
-      searchStr = searchStr.replace('author=', 'author');
-    }
+    // Remove the trailing '=' ONLY when the author parameter is completely empty
+    searchStr = searchStr.replace(/(^|&)author=(&|$)/, '$1author$2');
     
     const newHash = `${hashPath}${searchStr ? '?' + searchStr : ''}`;
     const targetHash = newHash ? `#${newHash}` : '';

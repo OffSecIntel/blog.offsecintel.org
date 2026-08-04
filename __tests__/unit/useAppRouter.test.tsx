@@ -32,4 +32,16 @@ describe('parseStateFromUrl', () => {
     const result = parseStateFromUrl(MOCK_POSTS);
     expect(result.dossierId).toBe('nayan');
   });
+
+  it('parses empty author from URL hash as offsec default', () => {
+    window.location.hash = '#?author';
+    const result = parseStateFromUrl(MOCK_POSTS);
+    expect(result.dossierId).toBe('offsec');
+  });
+
+  it('parses valid author from URL hash correctly', () => {
+    window.location.hash = '#?author=rahuladhikari';
+    const result = parseStateFromUrl(MOCK_POSTS);
+    expect(result.dossierId).toBe('rahuladhikari');
+  });
 });
