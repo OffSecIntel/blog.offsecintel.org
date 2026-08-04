@@ -32,9 +32,10 @@ interface ArticleAssetsWidgetProps {
   themeColor: string;
   isDark: boolean;
   hiddenAssets?: string[];
+  containsLiveMalware?: boolean;
 }
 
-export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets }: ArticleAssetsWidgetProps) {
+export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets, containsLiveMalware }: ArticleAssetsWidgetProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -206,7 +207,10 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
   };
 
   const colors = selectColorClasses();
-  const malwareAssets = displayAssets.filter(a => malwareExtensions.some(ext => a.name.toLowerCase().endsWith(ext)));
+  
+  // Only extract malware assets if the post actually contains live malware (defaults to true if undefined)
+  const isMalwarePost = containsLiveMalware !== false;
+  const malwareAssets = isMalwarePost ? displayAssets.filter(a => malwareExtensions.some(ext => a.name.toLowerCase().endsWith(ext))) : [];
 
   return (
     <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
@@ -338,7 +342,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
           {displayAssets.map((asset, index) => {
             const isImg = asset.type === "image";
-            const isApk = malwareExtensions.some(ext => asset.name.toLowerCase().endsWith(ext));
+            const isApk = isMalwarePost && malwareExtensions.some(ext => asset.name.toLowerCase().endsWith(ext));
             const isDeleting = deletingName === asset.name;
 
             return (

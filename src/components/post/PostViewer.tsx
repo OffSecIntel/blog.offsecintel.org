@@ -247,8 +247,13 @@ export function PostViewer({ activePost, setToastMessage, actionMenuOpen, setAct
         )}
         
         <FeedbackWidget />
-        <ArticleAssetsWidget postSlug={activePost.slug} themeColor={activePost.themeColor} isDark={darkMode} hiddenAssets={activePost.hiddenAssets} />
-
+        <ArticleAssetsWidget
+                postSlug={activePost.slug}
+                themeColor={activePost.themeColor || "crimson"}
+                isDark={darkMode}
+                hiddenAssets={activePost.hiddenAssets}
+                containsLiveMalware={activePost.containsLiveMalware}
+              />
         <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
             <Shield size={16} className={themeClasses.text} />

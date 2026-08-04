@@ -60,6 +60,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const reviewer = frontmatter.reviewer || undefined;
   const collection = frontmatter.collection || undefined;
   const hiddenAssets = frontmatter.hiddenAssets ? frontmatter.hiddenAssets.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined;
+  const containsLiveMalware = frontmatter.containsLiveMalware !== undefined ? frontmatter.containsLiveMalware !== 'false' : undefined;
 
   let threatIntel: any = undefined;
   const hasIntelKeys = Object.keys(frontmatter).some(k => k.startsWith('threatIntel.'));
@@ -110,7 +111,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
     id, title, slug, category, summary, content, author, authorAlias, authorRole,
     authorBio, authorSpecialties, authorGithub, authorHtb, date, readTime, published,
     draft, bannerImage, showBanner, layoutMode, themeColor, showToc, showAbstract,
-    impactLevel, coAuthor, reviewer, collection, threatIntel, hiddenAssets
+    impactLevel, coAuthor, reviewer, collection, threatIntel, hiddenAssets, containsLiveMalware
   };
 }
 

@@ -56,6 +56,7 @@ export interface BlogPost {
   reviewer?: string;
   collection?: string;
   hiddenAssets?: string[];
+  containsLiveMalware?: boolean;
 }
 
 export interface ExportSettings {
