@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { TaxonomyRegistry } from '../../services/taxonomy/registry';
-import { TaxonomyNode } from '../../services/taxonomy/types';
+import { TaxonomyRegistry } from '../../src/services/taxonomy/registry';
+import { TaxonomyNode } from '../../src/services/taxonomy/types';
 
 describe('TaxonomyRegistry', () => {
   const mockNodes: TaxonomyNode[] = [

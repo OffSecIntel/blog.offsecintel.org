@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { AuthorDossier } from '../../components/AuthorDossier';
-import { BlogPost, AuthorProfile } from '../../types';
+import { AuthorDossier } from '../../src/components/AuthorDossier';
+import { BlogPost, AuthorProfile } from '../../src/types';
 
 describe('AuthorDossier Component', () => {
   const mockAuthors: AuthorProfile[] = [

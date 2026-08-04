@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseStateFromUrl } from '../../hooks/useAppRouter';
+import { parseStateFromUrl } from '../../src/hooks/useAppRouter';
 
 const MOCK_POSTS: any = [
   { id: '123', slug: '123', category: 'all' },

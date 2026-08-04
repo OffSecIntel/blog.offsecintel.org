@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { PostDashboard } from '../../components/post/PostDashboard';
+import { PostDashboard } from '../../src/components/post/PostDashboard';
 
 const mockPosts = [
   {
@@ -35,11 +35,11 @@ const mockPosts = [
 ];
 
 const mockUseAppContext = vi.fn();
-vi.mock('../../context/AppContext', () => ({
+vi.mock('../../src/context/AppContext', () => ({
   useAppContext: () => mockUseAppContext()
 }));
 
-vi.mock('../../hooks/useAppRouter', () => ({
+vi.mock('../../src/hooks/useAppRouter', () => ({
   useAppRouter: () => ({
     selectedCategory: 'all',
     setSelectedCategory: vi.fn(),

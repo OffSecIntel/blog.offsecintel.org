@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MetaManager } from '../../services/seo/metaManager';
+import { MetaManager } from '../../src/services/seo/metaManager';
 
 describe('MetaManager', () => {
   beforeEach(() => {

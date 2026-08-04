@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PostViewer } from '../../components/post/PostViewer';
-import { AppProvider } from '../../context/AppContext';
+import { PostViewer } from '../../src/components/post/PostViewer';
+import { AppProvider } from '../../src/context/AppContext';
 
 beforeAll(() => {
   global.fetch = vi.fn(() => 
@@ -18,7 +18,7 @@ afterAll(() => {
 });
 
 // Mock MarkdownRenderer since it might try to fetch real files
-vi.mock('../../components/MarkdownRenderer', () => ({
+vi.mock('../../src/components/MarkdownRenderer', () => ({
   MarkdownRenderer: ({ url }: { url: string }) => <div data-testid="markdown-renderer">{url}</div>
 }));
 

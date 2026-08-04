@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ArticleAssetsWidget } from '../../components/ArticleAssetsWidget';
+import { ArticleAssetsWidget } from '../../src/components/ArticleAssetsWidget';
 
 // Mock global fetch
 const mockFetch = vi.fn();

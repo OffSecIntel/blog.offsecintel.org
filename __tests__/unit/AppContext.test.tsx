@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { AppProvider, useAppContext } from '../../context/AppContext';
+import { AppProvider, useAppContext } from '../../src/context/AppContext';
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {

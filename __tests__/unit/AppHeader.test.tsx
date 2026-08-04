@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AppHeader } from '../../components/layout/AppHeader';
-import { AppProvider } from '../../context/AppContext';
+import { AppHeader } from '../../src/components/layout/AppHeader';
+import { AppProvider } from '../../src/context/AppContext';
 
 describe('AppHeader', () => {
   it('renders header components', () => {

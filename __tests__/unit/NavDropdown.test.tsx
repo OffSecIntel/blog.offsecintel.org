@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { NavDropdown } from '../../components/NavDropdown';
+import { NavDropdown } from '../../src/components/NavDropdown';
 
 describe('NavDropdown', () => {
   it('renders dropdown and handles clicks', () => {

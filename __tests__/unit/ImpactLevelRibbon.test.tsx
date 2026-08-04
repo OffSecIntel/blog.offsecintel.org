@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ImpactLevelRibbon } from '../../components/widgets/ImpactLevelRibbon';
+import { ImpactLevelRibbon } from '../../src/components/widgets/ImpactLevelRibbon';
 
 describe('ImpactLevelRibbon', () => {
   it('renders critical impact correctly', () => {

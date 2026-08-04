@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getAuthorDisplay, getAuthorId, resolveAssetUrl } from '../../utils/helpers';
-import { BlogPost } from '../../types';
+import { getAuthorDisplay, getAuthorId, resolveAssetUrl } from '../../src/utils/helpers';
+import { BlogPost } from '../../src/types';
 
 describe('helpers', () => {
   describe('getAuthorDisplay', () => {

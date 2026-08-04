@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { MarkdownRenderer } from "../../components/MarkdownRenderer";
+import { MarkdownRenderer } from '../../src/components/MarkdownRenderer';
 
 describe('MarkdownRenderer', () => {
   it('renders generic markdown text correctly', () => {
