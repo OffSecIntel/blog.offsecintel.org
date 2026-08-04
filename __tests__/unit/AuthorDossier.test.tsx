@@ -26,6 +26,17 @@ describe('AuthorDossier Component', () => {
       content: '',
       active: false,
       published: false
+    },
+    {
+      id: 'offsec',
+      name: 'OffSecIntel Research Desk',
+      alias: 'offsec_desk',
+      role: 'Team',
+      bio: 'Team bio',
+      specialties: ['Malware'],
+      content: '',
+      active: true,
+      published: true
     }
   ];
 
@@ -92,7 +103,9 @@ describe('AuthorDossier Component', () => {
       />
     );
 
-    // Nayan is selected by default based on code logic for 'nayan' ID fallback
+    // Click Nayan because offsec is now the default selected researcher
+    fireEvent.click(screen.getByText('Nayan'));
+
     expect(screen.getByText('First Post')).toBeInTheDocument();
     expect(screen.queryByText('Unregistered Post')).not.toBeInTheDocument();
 
@@ -117,5 +130,22 @@ describe('AuthorDossier Component', () => {
 
     fireEvent.click(screen.getByText('Back to Articles'));
     expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides offsec team from author directory list and hides publications section', () => {
+    render(
+      <AuthorDossier 
+        posts={mockPosts} 
+        authors={mockAuthors} 
+        onSelectPost={vi.fn()} 
+        onClose={vi.fn()} 
+      />
+    );
+    
+    // It should render exactly once (in the main dossier panel), not twice (because it's filtered from the left directory panel)
+    expect(screen.getAllByText('OffSecIntel Research Desk').length).toBe(1);
+
+    // The publications section title should not be rendered for offsec
+    expect(screen.queryByText(/Authored Articles, Blogs & Learning Materials by OffSecIntel Research Desk/i)).not.toBeInTheDocument();
   });
 });
