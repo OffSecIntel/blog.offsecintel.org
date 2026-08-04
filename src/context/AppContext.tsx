@@ -106,7 +106,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       searchParams.set('post', activePost?.slug || selectedPostId);
     }
     if (showDossier && dossierSelectedResearcherId) {
-      searchParams.set('author', dossierSelectedResearcherId);
+      if (dossierSelectedResearcherId === 'offsec') {
+        searchParams.set('author', '');
+      } else {
+        searchParams.set('author', dossierSelectedResearcherId);
+      }
     }
     
     let hashPath = '';
@@ -115,7 +119,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hashPath = `/${selectedCategory}`;
     }
 
-    const searchStr = searchParams.toString();
+    let searchStr = searchParams.toString();
+    if (searchStr.includes('author=')) {
+      searchStr = searchStr.replace('author=', 'author');
+    }
+    
     const newHash = `${hashPath}${searchStr ? '?' + searchStr : ''}`;
     const targetHash = newHash ? `#${newHash}` : '';
     

@@ -1,5 +1,5 @@
 ---
-id: "nayan"
+id: "nayanrande"
 name: "Nayan Rande"
 alias: "alexdos2010m"
 githubUrl: "https://github.com/alexdos2010m"
@@ -7,7 +7,7 @@ htbUrl: "https://www.linkedin.com/in/nayanrande"
 role: "Detection Engineer & Threat Researcher"
 specialties: "Android Malware Analysis, KQL/PLX SQL Detection-as-Code, Reverse Engineering, Threat Hunting, EDR Telemetry"
 ---
-Nayan Rande is a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), specializing in advanced Android malware reverse engineering, EDR/XDR telemetry architectures, and custom detection-as-code engineering. With over four years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
+Nayan Rande is a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), specializing in advanced Android malware reverse engineering, EDR/XDR telemetry architectures, and custom detection-as-code engineering. With over 4+ years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
 
 ## Technical Specialties & Research Areas
 

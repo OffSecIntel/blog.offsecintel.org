@@ -23,16 +23,16 @@ export function getAuthorDisplay(authorName: string, post?: BlogPost): string {
 export function getAuthorId(authorName: string): string {
   const lower = authorName.toLowerCase();
   if (lower.includes('nayan') || lower.includes('rande')) {
-    return 'nayan';
+    return 'nayanrande';
   }
   if (lower.includes('mandar') || lower.includes('kulkarni') || lower.includes('sarah') || lower.includes('jenkins')) {
-    return 'mandar';
+    return 'mandarjk';
   }
-  if (lower.includes('offsec') || lower.includes('research') || lower.includes('desk') || lower.includes('group')) {
+  if (lower.includes('offsec') || lower.includes('intel') || lower.includes('research')) {
     return 'offsec';
   }
   if (lower.includes('rahul') || lower.includes('adhikari')) {
-    return 'rahul';
+    return 'rahuladhikari';
   }
   return lower.replace(/[^a-z0-9]/g, '_');
 }

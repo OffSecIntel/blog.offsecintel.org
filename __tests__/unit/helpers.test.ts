@@ -23,10 +23,10 @@ describe('helpers', () => {
 
   describe('getAuthorId', () => {
     it('returns correct mapped IDs', () => {
-      expect(getAuthorId('Nayan')).toBe('nayan');
-      expect(getAuthorId('Mandar')).toBe('mandar');
+      expect(getAuthorId('Nayan')).toBe('nayanrande');
+      expect(getAuthorId('Mandar')).toBe('mandarjk');
       expect(getAuthorId('OffSec Research')).toBe('offsec');
-      expect(getAuthorId('Rahul')).toBe('rahul');
+      expect(getAuthorId('Rahul')).toBe('rahuladhikari');
     });
 
     it('returns sanitized string for unknown authors', () => {

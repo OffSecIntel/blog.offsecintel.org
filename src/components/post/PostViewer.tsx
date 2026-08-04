@@ -165,7 +165,17 @@ export function PostViewer({ activePost, setToastMessage, actionMenuOpen, setAct
                 {activePost.author} {activePost.authorAlias ? `(${activePost.authorAlias})` : ''}
               </button></span>
               {activePost.reviewer && (
-                <span className="ml-1">(Reviewed by: {activePost.reviewer})</span>
+                <span className="ml-1">(Reviewed by: <button
+                  onClick={() => {
+                    setSelectedPostId(null);
+                    setDossierSelectedResearcherId(getAuthorId(activePost.reviewer!));
+                    setShowDossier(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="text-slate-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 font-bold transition-colors underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4"
+                >
+                  {activePost.reviewer}
+                </button>)</span>
               )}
             </div>
             <span className="text-slate-300 dark:text-slate-700">|</span>

@@ -22,7 +22,7 @@ export function AppFooter() {
           <button
             onClick={() => {
               setSelectedPostId(null);
-              setDossierSelectedResearcherId('nayan');
+              setDossierSelectedResearcherId('offsec');
               setShowDossier(true);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}

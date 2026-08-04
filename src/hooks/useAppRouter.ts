@@ -41,7 +41,9 @@ export function parseStateFromUrl(posts: BlogPost[]): { category: string, postId
   }
 
   let dossierId: string | null = null;
-  const dossierSlug = params.get('dossier') || params.get('author') || params.get('researcher');
+  const hasAuthor = params.has('author');
+  const authorVal = params.get('author');
+  const dossierSlug = params.get('dossier') || (hasAuthor && !authorVal ? 'offsec' : authorVal) || params.get('researcher');
   if (dossierSlug) {
     dossierId = dossierSlug;
   }
