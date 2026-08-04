@@ -16,16 +16,15 @@ import {
   Smartphone,
   ChevronDown,
   ChevronUp,
-  Bug
+  Bug,
+  AlertTriangle,
+  File,
+  PackageOpen,
+  Plus,
+  FolderLock
 } from "lucide-react";
-
-interface Asset {
-  name: string;
-  size: number;
-  type: string;
-  url: string;
-  updatedAt: string;
-}
+import { AssetManager } from "../utils/AssetManager";
+import { Asset } from "../types";
 
 interface ArticleAssetsWidgetProps {
   postSlug: string;
@@ -49,17 +48,8 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      let res = await fetch(`/api/posts/${postSlug}/assets`);
-      
-      // Fallback for GitHub Pages (Static Hosting) where the Express API is offline
-      if (!res.ok) {
-        res = await fetch(`/blog-assets/${postSlug}/assets.json`);
-      }
-      
-      if (res.ok) {
-        const data = await res.json();
-        setAssets(data);
-      }
+      const data = await AssetManager.getPostAssets(postSlug);
+      setAssets(data);
     } catch (err) {
       console.error("Error fetching assets:", err);
     } finally {

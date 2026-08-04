@@ -10,6 +10,14 @@ export interface MITRETechnique {
   id: string;
 }
 
+export interface Asset {
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  updatedAt?: string;
+}
+
 export interface IoCEntry {
   type: 'sha256' | 'md5' | 'ip' | 'domain' | 'url' | 'registry';
   value: string;
