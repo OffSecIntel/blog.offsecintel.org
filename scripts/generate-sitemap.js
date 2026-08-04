@@ -34,6 +34,17 @@ function generateSitemap() {
             slug = slugMatch[1].trim();
           }
 
+          // Check if post is published and not a draft
+          const publishedMatch = frontmatter.match(/^published:\s*(true|false)$/m);
+          const isPublished = publishedMatch ? publishedMatch[1].trim() === 'true' : false;
+          
+          const draftMatch = frontmatter.match(/^draft:\s*(true|false)$/m);
+          const isDraft = draftMatch ? draftMatch[1].trim() === 'true' : false;
+
+          if (!isPublished || isDraft) {
+            continue; // Skip generating URL for this post
+          }
+
           // Generate URL
           const url = `${BASE_URL}/?post=${slug}`;
           urls.push(`  <url>\n    <loc>${url}</loc>\n    <priority>0.8</priority>\n  </url>`);
