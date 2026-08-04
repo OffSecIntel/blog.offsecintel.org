@@ -101,9 +101,9 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
     }
     
     // 2. Folder Convention (Zero-config)
+    if (lowerName.includes('/private/')) return false;
     if (malwareExtensions.some(ext => lowerName.endsWith(ext))) return true; // Executables are always analyst targets
     if (lowerName.includes('/downloads/') || lowerName.includes('/public/')) return true;
-    if (lowerName.includes('/private/')) return false;
     
     // 3. Sensible Fallback (For files at root)
     if (a.type !== 'image') return true;
