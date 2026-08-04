@@ -1,5 +1,5 @@
 ---
-id: "mandar"
+id: "mandarjk"
 name: "Mandar Jayant Kulkarni"
 alias: "mandarjk"
 githubUrl: "https://github.com/mandarjk"

@@ -4,8 +4,8 @@ name: "OffSecIntel Research Desk"
 alias: "offsec_desk"
 githubUrl: "https://github.com/offsecintel"
 role: "Collaborative Intelligence & Reverse Engineering Team"
-specialties: "Malware Dissection (IL2CPP, ELF), Dynamic Instrumentation, C2 Network Forensics, Vulnerability Coordination"
-active: false
+specialties: "Malware Dissection (Android, Windows, & Mac), Dynamic Instrumentation, C2 Network Forensics, Vulnerability Coordination, XDR, Malware Analysis, Incident Response (IR), Threat Hunting"
+active: true
 ---
 The collaborative research division of OffSecIntel. Composed of malware reverse engineers, threat analysts, and network forensic experts, the team works dynamically to analyze emerging Advanced Persistent Threat (APT) campaigns, dissect commercial-grade surveillance implants, and issue indicators of compromise (IoCs) to security networks globally.
 

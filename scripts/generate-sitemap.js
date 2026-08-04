@@ -55,6 +55,36 @@ function generateSitemap() {
 
   searchDir(POSTS_DIR);
 
+  // Add author profiles to sitemap
+  const AUTHORS_DIR = path.resolve('src/authors');
+  if (fs.existsSync(AUTHORS_DIR)) {
+    const authorFiles = fs.readdirSync(AUTHORS_DIR).filter(f => f.endsWith('.md'));
+    for (const file of authorFiles) {
+      const fullPath = path.join(AUTHORS_DIR, file);
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      if (match) {
+        const frontmatter = match[1];
+        
+        const activeMatch = frontmatter.match(/^active:\s*(true|false)$/m);
+        const isActive = activeMatch ? activeMatch[1].trim() === 'true' : true;
+
+        if (isActive) {
+          let authorId = file.replace(/\.md$/, '');
+          const idMatch = frontmatter.match(/^id:\s*"?([^"\r\n]+)"?$/m);
+          if (idMatch) {
+            authorId = idMatch[1].trim();
+          }
+          let url = `${BASE_URL}/?author=${authorId}`;
+          if (authorId === 'offsec') {
+            url = `${BASE_URL}/?author`;
+          }
+          urls.push(`  <url>\n    <loc>${url}</loc>\n    <priority>0.7</priority>\n  </url>`);
+        }
+      }
+    }
+  }
+
   const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
 
   fs.writeFileSync(SITEMAP_PATH, sitemapContent, 'utf-8');
