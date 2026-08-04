@@ -15,7 +15,8 @@ import {
   Unlock,
   Smartphone,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bug
 } from "lucide-react";
 
 interface Asset {
@@ -86,6 +87,8 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
     });
   };
 
+  const malwareExtensions = ['.apk', '.exe', '.dll', '.elf', '.bin', '.msi', '.sys', '.ps1', '.vbs', '.bat', '.cmd', '.sh', '.macho', '.dmg'];
+
   // Hybrid approach: Respect explicit overrides, folder conventions, and sensible fallbacks
   const displayAssets = assets.filter(a => {
     const fileName = a.name.split('/').pop() || a.name;
@@ -97,7 +100,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
     }
     
     // 2. Folder Convention (Zero-config)
-    if (lowerName.endsWith('.apk')) return true; // APKs are always analyst targets
+    if (malwareExtensions.some(ext => lowerName.endsWith(ext))) return true; // Executables are always analyst targets
     if (lowerName.includes('/downloads/') || lowerName.includes('/public/')) return true;
     if (lowerName.includes('/private/')) return false;
     
@@ -203,7 +206,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
   };
 
   const colors = selectColorClasses();
-  const apkAssets = displayAssets.filter(a => a.name.toLowerCase().endsWith(".apk"));
+  const malwareAssets = displayAssets.filter(a => malwareExtensions.some(ext => a.name.toLowerCase().endsWith(ext)));
 
   return (
     <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
@@ -273,17 +276,17 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
         </div>
       )}
 
-      {/* Prominent APK Download Section */}
-      {apkAssets.length > 0 && (
+      {/* Prominent Malware Download Section */}
+      {malwareAssets.length > 0 && (
         <div className="border border-rose-500/30 bg-rose-500/5 rounded-lg p-3.5 space-y-2.5 animate-fade-in">
           <button
             onClick={() => setShowApks(!showApks)}
             className="flex items-center justify-between w-full hover:bg-rose-500/10 p-1.5 -m-1.5 rounded transition-colors group"
           >
             <div className="flex items-center gap-2">
-              <Smartphone size={14} className="text-rose-500" />
+              <Bug size={14} className="text-rose-500" />
               <span className="text-[10px] font-bold font-mono text-rose-500 uppercase tracking-wider">
-                ANALYST_RESOURCE: APK_TARGET
+                ANALYST_RESOURCE: MALWARE_SAMPLE
               </span>
             </div>
             <div className="text-rose-500 opacity-50 group-hover:opacity-100 transition-opacity">
@@ -296,7 +299,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
 
           {showApks && (
             <div className="space-y-1.5 pt-2 border-t border-rose-500/10 mt-2 animate-fade-in">
-              {apkAssets.map(apk => (
+              {malwareAssets.map(apk => (
                 <a
                   key={apk.name}
                   href={apk.url}
@@ -335,7 +338,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
           {displayAssets.map((asset, index) => {
             const isImg = asset.type === "image";
-            const isApk = asset.name.toLowerCase().endsWith(".apk");
+            const isApk = malwareExtensions.some(ext => asset.name.toLowerCase().endsWith(ext));
             const isDeleting = deletingName === asset.name;
 
             return (
@@ -351,7 +354,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
                     {isImg ? (
                       <ImageIcon size={13} className="text-emerald-500 shrink-0" />
                     ) : isApk ? (
-                      <Smartphone size={13} className="text-rose-500 shrink-0 animate-pulse" />
+                      <Bug size={13} className="text-rose-500 shrink-0 animate-pulse" />
                     ) : asset.name.endsWith(".js") || asset.name.endsWith(".ts") || asset.name.endsWith(".py") ? (
                       <FileCode size={13} className="text-cyan-500 shrink-0" />
                     ) : (
@@ -364,11 +367,11 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
                         }`}
                       title={asset.name}
                     >
-                      {asset.name}
+                      {asset.name.split('/').pop()}
                     </span>
                     {isApk && (
                       <span className="px-1 py-0.5 text-[8px] font-bold font-mono uppercase bg-rose-500/10 border border-rose-500/25 text-rose-500 rounded shrink-0">
-                        APK_SAMPLE
+                        MALWARE_SAMPLE
                       </span>
                     )}
                   </div>
