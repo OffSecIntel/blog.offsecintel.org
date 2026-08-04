@@ -55,17 +55,19 @@ export function OffSecIntelLogoIcon({ className = "w-9 h-9 p-1" }: { className?:
 
 export function OffSecIntelLogo() {
   return (
-    <a
-      href="https://offsecintel.org"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2.5 cursor-pointer select-none group"
-      onClick={(e) => {
-        // Prevent click bubbling up so we don't trigger layout resets unless intended
-      }}
-    >
-      <OffSecIntelLogoIcon className="w-9 h-9 p-1 group-hover:scale-105 transition-transform" />
-      <div>
+    <div className="flex items-center gap-2.5 select-none group">
+      <a
+        href="https://offsecintel.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="cursor-pointer flex items-center"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <OffSecIntelLogoIcon className="w-9 h-9 p-1 group-hover:scale-105 transition-transform" />
+      </a>
+      <div className="cursor-pointer">
         <span className="font-sans font-bold tracking-tight text-slate-900 dark:text-white text-sm md:text-base leading-none">
           Off<span className="text-[#970000] dark:text-[#ff4b4b]">Sec</span>Intel
         </span>
@@ -73,6 +75,6 @@ export function OffSecIntelLogo() {
           {PORTAL_CONFIG.logoText}
         </p>
       </div>
-    </a>
+    </div>
   );
 }

@@ -9,6 +9,7 @@ interface AuthorDossierProps {
   posts: BlogPost[];
   authors?: AuthorProfile[];
   initialSelectedResearcher?: string | null;
+  onSelectResearcher?: (id: string) => void;
   isDark?: boolean;
   onSelectPost: (id: string) => void;
   onClose: () => void;
@@ -18,6 +19,7 @@ export function AuthorDossier({
   posts, 
   authors = [], 
   initialSelectedResearcher, 
+  onSelectResearcher,
   isDark = false,
   onSelectPost, 
   onClose 
@@ -179,6 +181,7 @@ export function AuthorDossier({
                   key={researcher.id}
                   onClick={() => {
                     setSelectedResearcher(researcher.id);
+                    if (onSelectResearcher) onSelectResearcher(researcher.id);
                   }}
                   className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
                     selectedResearcher === researcher.id

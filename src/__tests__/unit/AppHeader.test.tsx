@@ -11,9 +11,8 @@ describe('AppHeader', () => {
     render(
       <AppProvider>
         <AppHeader 
-          isMobileMenuOpen={false} 
-          setIsMobileMenuOpen={setMenu} 
-          readingProgress={50} 
+          isHeaderVisible={true} 
+          scrollProgress={50} 
         />
       </AppProvider>
     );
@@ -27,9 +26,8 @@ describe('AppHeader', () => {
     render(
       <AppProvider>
         <AppHeader 
-          isMobileMenuOpen={false} 
-          setIsMobileMenuOpen={setMenu} 
-          readingProgress={0} 
+          isHeaderVisible={true} 
+          scrollProgress={0} 
         />
       </AppProvider>
     );
@@ -46,9 +44,8 @@ describe('AppHeader', () => {
     render(
       <AppProvider>
         <AppHeader 
-          isMobileMenuOpen={false} 
-          setIsMobileMenuOpen={setMenu} 
-          readingProgress={0} 
+          isHeaderVisible={true} 
+          scrollProgress={0} 
         />
       </AppProvider>
     );

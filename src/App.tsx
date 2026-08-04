@@ -20,6 +20,7 @@ function AppInner() {
     selectedPostId, 
     showDossier, 
     dossierSelectedResearcherId, 
+    setDossierSelectedResearcherId,
     setShowDossier, 
     setSelectedPostId, 
     selectedCategory 
@@ -104,6 +105,9 @@ function AppInner() {
                 onSelectPost={(id) => {
                   setSelectedPostId(id);
                   setShowDossier(false);
+                }}
+                onSelectResearcher={(id) => {
+                  setDossierSelectedResearcherId(id);
                 }}
                 onClose={() => setShowDossier(false)}
               />

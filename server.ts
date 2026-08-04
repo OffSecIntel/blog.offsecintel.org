@@ -180,11 +180,27 @@ app.get("/api/posts/:slug/assets", (req, res) => {
   try {
     const { slug } = req.params;
     const { dirPath, urlPrefix } = findPostAssetDir(slug);
-    const files = fs.readdirSync(dirPath);
-    const assets = files.map(file => {
-      const filePath = path.join(dirPath, file);
-      const stats = fs.statSync(filePath);
-      const ext = path.extname(file).toLowerCase();
+    
+    const getAllFiles = (dir: string, relPath: string = ''): { name: string, filePath: string, relPath: string }[] => {
+      let results: { name: string, filePath: string, relPath: string }[] = [];
+      const list = fs.readdirSync(dir);
+      list.forEach(file => {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+        const newRelPath = relPath ? `${relPath}/${file}` : file;
+        if (stat && stat.isDirectory()) {
+          results = results.concat(getAllFiles(filePath, newRelPath));
+        } else {
+          results.push({ name: file, filePath, relPath: newRelPath });
+        }
+      });
+      return results;
+    };
+
+    const files = getAllFiles(dirPath);
+    const assets = files.map(f => {
+      const stats = fs.statSync(f.filePath);
+      const ext = path.extname(f.name).toLowerCase();
       let type = "file";
       if ([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"].includes(ext)) {
         type = "image";
@@ -192,10 +208,10 @@ app.get("/api/posts/:slug/assets", (req, res) => {
         type = "code";
       }
       return {
-        name: file,
+        name: f.relPath,
         size: stats.size,
         type,
-        url: `${urlPrefix}/${file}`,
+        url: `${urlPrefix}/${f.relPath}`,
         updatedAt: stats.mtime
       };
     });

@@ -14,6 +14,8 @@ interface CollectionSidebarProps {
   posts?: BlogPost[];
   isMobileDrawerOpen?: boolean;
   onCloseMobileDrawer?: () => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 export const CollectionSidebar: React.FC<CollectionSidebarProps> = ({
@@ -23,11 +25,10 @@ export const CollectionSidebar: React.FC<CollectionSidebarProps> = ({
   isDark,
   posts,
   isMobileDrawerOpen = false,
-  onCloseMobileDrawer
+  onCloseMobileDrawer,
+  isSidebarCollapsed,
+  setIsSidebarCollapsed
 }) => {
-  // Desktop sidebar expand/collapse state (Microsoft Learn style « / »)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
   // Helper to check if a child post exists and is published (not draft)
   const isArticlePublished = (slug: string): boolean => {
     if (!posts || posts.length === 0) return true;
@@ -174,9 +175,7 @@ export const CollectionSidebar: React.FC<CollectionSidebarProps> = ({
   return (
     <>
       {/* Desktop Left-Hand Sidebar (Microsoft Learn Style In-Place Collapse « / ») */}
-      <aside className={`hidden lg:block shrink-0 sticky top-24 self-start transition-all duration-300 ${
-        isSidebarCollapsed ? 'w-10' : 'w-64'
-      }`}>
+      <aside className={`hidden lg:block shrink-0 sticky top-24 self-start transition-all duration-300 w-full`}>
         {isSidebarCollapsed ? (
           /* Slim Collapsed Rail with Re-expand Button (») */
           <div className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0d1321]/80 backdrop-blur-md shadow-sm flex flex-col items-center">

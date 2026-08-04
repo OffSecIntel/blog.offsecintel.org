@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  FileCode, 
-  Image as ImageIcon, 
-  FileText, 
-  Download, 
-  Trash2, 
-  UploadCloud, 
-  Copy, 
-  Check, 
+import {
+  FileCode,
+  Image as ImageIcon,
+  FileText,
+  Download,
+  Trash2,
+  UploadCloud,
+  Copy,
+  Check,
   AlertCircle,
   Loader2,
   FolderOpen,
   Lock,
   Unlock,
-  Smartphone
+  Smartphone,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface Asset {
@@ -28,9 +30,10 @@ interface ArticleAssetsWidgetProps {
   postSlug: string;
   themeColor: string;
   isDark: boolean;
+  hiddenAssets?: string[];
 }
 
-export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAssetsWidgetProps) {
+export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets }: ArticleAssetsWidgetProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -38,6 +41,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [deletingName, setDeletingName] = useState<string | null>(null);
   const [isAuthorMode, setIsAuthorMode] = useState(false);
+  const [showApks, setShowApks] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch assets list from server
@@ -72,15 +76,30 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
   // Copy to clipboard helper
   const copyToClipboard = (asset: Asset, index: number) => {
     const isImg = asset.type === "image";
-    const markdownCode = isImg 
-      ? `![${asset.name}](${asset.url})` 
+    const markdownCode = isImg
+      ? `![${asset.name}](${asset.url})`
       : `[${asset.name}](${asset.url})`;
-    
+
     navigator.clipboard.writeText(markdownCode).then(() => {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     });
   };
+
+  // Filter out banner/hero/cover images as they are used for presentation, not analysis
+  const displayAssets = assets.filter(a => {
+    const fileName = a.name.split('/').pop() || a.name;
+    const lowerName = a.name.toLowerCase();
+    
+    // Explicit override via markdown frontmatter
+    if (hiddenAssets && hiddenAssets.length > 0) {
+      return !hiddenAssets.some(hidden => lowerName.includes(hidden.toLowerCase()) || hidden.toLowerCase() === fileName.toLowerCase());
+    }
+    
+    // Default fallback: hide presentation images
+    if (a.type !== 'image') return true;
+    return !lowerName.includes('banner') && !lowerName.includes('hero') && !lowerName.includes('cover');
+  });
 
   // File upload helper (Base64 uploader)
   const uploadFile = (file: File) => {
@@ -179,11 +198,11 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
   };
 
   const colors = selectColorClasses();
-  const apkAssets = assets.filter(a => a.name.toLowerCase().endsWith(".apk"));
+  const apkAssets = displayAssets.filter(a => a.name.toLowerCase().endsWith(".apk"));
 
   return (
     <div className="border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#121826] rounded-xl p-5 shadow-sm space-y-4">
-      
+
       {/* Widget Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
@@ -196,11 +215,10 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
               setIsAuthorMode(!isAuthorMode);
               setDeletingName(null);
             }}
-            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase border transition-all ${
-              isAuthorMode
+            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono font-bold uppercase border transition-all ${isAuthorMode
                 ? "bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20 shadow-sm"
                 : "bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-            }`}
+              }`}
             title={isAuthorMode ? "Switch to Secure Reader Mode" : "Toggle Authoring Mode (Upload/Delete Files)"}
           >
             {isAuthorMode ? <Unlock size={10} className="text-rose-500" /> : <Lock size={10} />}
@@ -214,23 +232,22 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
 
       {/* Drag & Drop Upload Zone - Only active in Author Mode */}
       {isAuthorMode && (
-        <div 
+        <div
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative border border-dashed rounded-lg p-4 text-center cursor-pointer transition-all duration-150 animate-fade-in ${
-            dragActive 
-              ? `${colors.border} ${colors.bg} scale-[1.01]` 
+          className={`relative border border-dashed rounded-lg p-4 text-center cursor-pointer transition-all duration-150 animate-fade-in ${dragActive
+              ? `${colors.border} ${colors.bg} scale-[1.01]`
               : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-950/20"
-          }`}
+            }`}
         >
-          <input 
+          <input
             ref={fileInputRef}
-            type="file" 
-            className="hidden" 
-            onChange={handleFileInputChange} 
+            type="file"
+            className="hidden"
+            onChange={handleFileInputChange}
           />
           <div className="flex flex-col items-center justify-center gap-1.5">
             {uploading ? (
@@ -254,33 +271,44 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
       {/* Prominent APK Download Section */}
       {apkAssets.length > 0 && (
         <div className="border border-rose-500/30 bg-rose-500/5 rounded-lg p-3.5 space-y-2.5 animate-fade-in">
-          <div className="flex items-center gap-2">
-            <Smartphone size={14} className="text-rose-500 animate-pulse" />
-            <span className="text-[10px] font-bold font-mono text-rose-500 uppercase tracking-wider">
-              ANALYST_RESOURCE: APK_TARGET
-            </span>
-          </div>
+          <button
+            onClick={() => setShowApks(!showApks)}
+            className="flex items-center justify-between w-full hover:bg-rose-500/10 p-1.5 -m-1.5 rounded transition-colors group"
+          >
+            <div className="flex items-center gap-2">
+              <Smartphone size={14} className="text-rose-500" />
+              <span className="text-[10px] font-bold font-mono text-rose-500 uppercase tracking-wider">
+                ANALYST_RESOURCE: APK_TARGET
+              </span>
+            </div>
+            <div className="text-rose-500 opacity-50 group-hover:opacity-100 transition-opacity">
+              {showApks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </div>
+          </button>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
-            Advisory contains active/deactivated mobile application packages. Execute only in sandboxed or emulator analysis systems.
+            Contains live malware samples. Only open these files in isolated analysis environments (VMs or emulators) to prevent infection.
           </p>
-          <div className="space-y-1.5">
-            {apkAssets.map(apk => (
-              <a
-                key={apk.name}
-                href={apk.url}
-                download={apk.name}
-                className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white transition-all shadow-sm font-mono text-[11px] font-bold"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Download size={12} className="shrink-0" />
-                  <span className="truncate">{apk.name}</span>
-                </div>
-                <span className="text-[9px] bg-rose-600 dark:bg-rose-700 px-1.5 py-0.5 rounded text-white/90 shrink-0">
-                  {formatSize(apk.size)}
-                </span>
-              </a>
-            ))}
-          </div>
+
+          {showApks && (
+            <div className="space-y-1.5 pt-2 border-t border-rose-500/10 mt-2 animate-fade-in">
+              {apkAssets.map(apk => (
+                <a
+                  key={apk.name}
+                  href={apk.url}
+                  download={apk.name}
+                  className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white transition-all shadow-sm font-mono text-[11px] font-bold"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Download size={12} className="shrink-0" />
+                    <span className="truncate">{apk.name}</span>
+                  </div>
+                  <span className="text-[9px] bg-rose-600 dark:bg-rose-700 px-1.5 py-0.5 rounded text-white/90 shrink-0">
+                    {formatSize(apk.size)}
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -293,7 +321,7 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
         <div className="text-center py-6 border border-dashed border-slate-100 dark:border-slate-800/50 rounded-lg bg-slate-50/20 dark:bg-slate-950/10">
           <p className="text-[10px] text-slate-400 font-mono font-bold uppercase">NO_INDEXED_ARTIFACTS</p>
           <p className="text-[9.5px] text-slate-450 dark:text-slate-500 mt-1 max-w-[210px] mx-auto leading-relaxed">
-            {isAuthorMode 
+            {isAuthorMode
               ? "Upload diagrams, Frida scripts, or IoC files isolated specifically for this publication."
               : "This intelligence advisory does not have any attached scripts or capture file resources."}
           </p>
@@ -306,13 +334,12 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
             const isDeleting = deletingName === asset.name;
 
             return (
-              <div 
+              <div
                 key={asset.name}
-                className={`group flex flex-col p-2.5 rounded-lg border transition-all text-xs ${
-                  isApk 
+                className={`group flex flex-col p-2.5 rounded-lg border transition-all text-xs ${isApk
                     ? "border-rose-550/20 bg-rose-500/5 hover:bg-rose-500/10"
                     : "border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-950/10 hover:bg-slate-55 dark:hover:bg-slate-950/20"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -325,12 +352,11 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
                     ) : (
                       <FileText size={13} className="text-slate-400 shrink-0" />
                     )}
-                    <span 
-                      className={`font-semibold truncate font-mono text-[11px] ${
-                        isApk 
+                    <span
+                      className={`font-semibold truncate font-mono text-[11px] ${isApk
                           ? "text-rose-600 dark:text-rose-400 font-bold"
                           : "text-slate-700 dark:text-slate-300"
-                      }`}
+                        }`}
                       title={asset.name}
                     >
                       {asset.name}
@@ -356,13 +382,13 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark }: ArticleAss
                     {isDeleting ? (
                       <div className="flex items-center gap-1 text-[9px] font-mono">
                         <span className="text-red-500 font-bold uppercase">Delete?</span>
-                        <button 
+                        <button
                           onClick={() => handleDelete(asset.name)}
                           className="px-1 text-red-500 hover:underline font-bold"
                         >
                           Yes
                         </button>
-                        <button 
+                        <button
                           onClick={() => setDeletingName(null)}
                           className="px-1 text-slate-400 hover:underline"
                         >

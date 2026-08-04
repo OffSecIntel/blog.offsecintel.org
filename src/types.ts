@@ -55,6 +55,7 @@ export interface BlogPost {
   coAuthor?: string;
   reviewer?: string;
   collection?: string;
+  hiddenAssets?: string[];
 }
 
 export interface ExportSettings {

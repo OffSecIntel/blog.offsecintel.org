@@ -32,6 +32,7 @@ describe('AuthorDossier Component', () => {
   const mockPosts: BlogPost[] = [
     {
       id: 'post-1',
+      slug: 'first-post',
       title: 'First Post',
       summary: 'Summary 1',
       date: '2026-08-01',
@@ -39,11 +40,11 @@ describe('AuthorDossier Component', () => {
       category: 'security',
       readTime: '5 min',
       content: '',
-      tags: [],
       published: true
     },
     {
       id: 'post-2',
+      slug: 'unregistered-post',
       title: 'Unregistered Post',
       summary: 'Summary 2',
       date: '2026-08-02',
@@ -51,7 +52,6 @@ describe('AuthorDossier Component', () => {
       category: 'malwarere',
       readTime: '10 min',
       content: '',
-      tags: [],
       published: true
     }
   ];

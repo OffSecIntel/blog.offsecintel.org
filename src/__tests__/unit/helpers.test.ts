@@ -52,14 +52,19 @@ describe('helpers', () => {
     it('handles GitHub Pages repos properly', () => {
       // Mock window.location for github pages scenario
       const originalLocation = window.location;
-      delete (window as any).location;
-      window.location = { ...originalLocation, hostname: 'user.github.io', pathname: '/repo-name/' } as any;
+      Object.defineProperty(window, 'location', {
+        value: { ...originalLocation, hostname: 'user.github.io', pathname: '/repo-name/' },
+        writable: true
+      });
 
       expect(resolveAssetUrl('/images/test.png')).toBe('/repo-name/images/test.png');
       expect(resolveAssetUrl('images/test.png')).toBe('/repo-name/images/test.png');
       expect(resolveAssetUrl('/repo-name/images/test.png')).toBe('/repo-name/images/test.png'); // avoid double base
 
-      window.location = originalLocation;
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true
+      });
     });
   });
 });

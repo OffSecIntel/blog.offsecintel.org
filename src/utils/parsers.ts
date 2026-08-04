@@ -29,8 +29,9 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
     }
   });
 
-  const fileBaseName = filename.replace(/\.md$/, '').split('/').pop() || 'untitled';
-  const slug = frontmatter.slug || fileBaseName;
+  const pathParts = filename.replace(/\.md$/, '').split('/').filter(p => p !== '..' && p !== 'posts' && p !== 'src');
+  const fallbackSlug = pathParts.slice(-2).join('-');
+  const slug = frontmatter.slug || fallbackSlug;
   const rawId = frontmatter.id?.trim();
   const id = rawId && rawId.length > 0 ? rawId : generateNumericId(slug);
 
@@ -58,6 +59,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
   const coAuthor = frontmatter.coAuthor || undefined;
   const reviewer = frontmatter.reviewer || undefined;
   const collection = frontmatter.collection || undefined;
+  const hiddenAssets = frontmatter.hiddenAssets ? frontmatter.hiddenAssets.split(',').map((s: string) => s.trim()).filter(Boolean) : undefined;
 
   let threatIntel: any = undefined;
   const hasIntelKeys = Object.keys(frontmatter).some(k => k.startsWith('threatIntel.'));
@@ -108,7 +110,7 @@ export function parseMarkdownPost(filename: string, fileContent: string): BlogPo
     id, title, slug, category, summary, content, author, authorAlias, authorRole,
     authorBio, authorSpecialties, authorGithub, authorHtb, date, readTime, published,
     draft, bannerImage, showBanner, layoutMode, themeColor, showToc, showAbstract,
-    impactLevel, coAuthor, reviewer, collection, threatIntel
+    impactLevel, coAuthor, reviewer, collection, threatIntel, hiddenAssets
   };
 }
 

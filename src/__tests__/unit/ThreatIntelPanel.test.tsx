@@ -33,7 +33,8 @@ describe('ThreatIntelPanel Component', () => {
       },
       {
         type: 'sha256',
-        value: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+        value: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        description: 'Test Hash'
       }
     ]
   };

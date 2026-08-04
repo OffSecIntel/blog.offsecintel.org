@@ -36,7 +36,9 @@ export function AppHeader({ isHeaderVisible, scrollProgress, activePost }: { isH
         {/* Configuration-driven Navigation Menus */}
         <nav className="hidden md:flex items-center gap-6 text-xs font-mono font-medium">
           {NAVIGATION_CONFIG.filter(item => item.visible).map((item, index) => {
-            const isActive = taxonomy.matchesFilter(selectedCategory, item.target) && !selectedPostId && !showDossier;
+            const isActive = item.target === 'all' 
+              ? selectedCategory === 'all' && !selectedPostId && !showDossier
+              : taxonomy.matchesFilter(selectedCategory, item.target) && !selectedPostId && !showDossier;
             return (
               <NavDropdown
                 key={index}
