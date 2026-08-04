@@ -202,5 +202,13 @@ If you prefer to compile the static application locally and manually deploy the 
 
 ---
 
+## 🏗️ Modularity & Testability Standards
+To ensure the codebase scales safely without degrading maintainability:
+*   **Encapsulate Complex Logic:** Avoid monolithic inline code additions inside React components. Complex operations (like asset fetching algorithms, data transformations, or API fallbacks) MUST be extracted into dedicated modules inside `src/utils/` or `src/services/`.
+*   **Component Isolation:** Keeping logic outside the UI components guarantees that algorithms can be easily isolated and tested via unit test suites without rendering full, heavy React component trees.
+*   **Test-Driven Refactoring:** All logic abstractions must be accompanied by comprehensive tests in the root `__tests__/` directory.
+
+---
+
 ## 📄 Developer Documentation & Upgrading Guide
 For detailed system architecture maps, REST API endpoint schemas, JSON formats, and step-by-step instructions on connecting database engines (e.g. Cloud SQL / PostgreSQL) or cloud-hosted buckets (GCS), please refer to **`DEVELOPER.md`** at the project root.
