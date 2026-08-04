@@ -102,7 +102,7 @@ export function AuthorDossier({
   const visibleResearchers = allResearchers.filter(r => r.active !== false && r.published !== false);
 
   // State for selected researcher
-  const [selectedResearcher, setSelectedResearcher] = useState<string>('nayan');
+  const [selectedResearcher, setSelectedResearcher] = useState<string>('offsec');
 
   // Sync selected researcher with initial prop
   useEffect(() => {
@@ -118,10 +118,10 @@ export function AuthorDossier({
     if (!p.published || p.draft) return false;
     const authorName = p.author.toLowerCase();
     
-    if (currentResearcher.id === 'nayan') {
+    if (currentResearcher.id === 'nayanrande') {
       return authorName.includes('nayan') || authorName.includes('rande');
     }
-    if (currentResearcher.id === 'mandar') {
+    if (currentResearcher.id === 'mandarjk') {
       return authorName.includes('mandar') || authorName.includes('kulkarni') || authorName.includes('sarah') || authorName.includes('jenkins');
     }
     if (currentResearcher.id === 'offsec') {
@@ -176,7 +176,7 @@ export function AuthorDossier({
               <span>Registered Contributors</span>
             </h3>
             <div className="space-y-1.5">
-              {visibleResearchers.map(researcher => (
+              {visibleResearchers.filter(r => r.id !== 'offsec').map(researcher => (
                 <button
                   key={researcher.id}
                   onClick={() => {
@@ -296,45 +296,47 @@ export function AuthorDossier({
           </div>
 
           {/* Publications & Advisories */}
-          <div className="space-y-4 border border-slate-200 dark:border-slate-800 bg-slate-50/10 dark:bg-slate-900/10 rounded-xl p-6">
-            <span className="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-mono block border-b border-slate-200 dark:border-slate-800/60 pb-2">
-              Authored Articles, Blogs & Learning Materials by {currentResearcher.name}
-            </span>
+          {currentResearcher.id !== 'offsec' && (
+            <div className="space-y-4 border border-slate-200 dark:border-slate-800 bg-slate-50/10 dark:bg-slate-900/10 rounded-xl p-6">
+              <span className="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-mono block border-b border-slate-200 dark:border-slate-800/60 pb-2">
+                Authored Articles, Blogs & Learning Materials by {currentResearcher.name}
+              </span>
 
-            {researcherPosts.length === 0 ? (
-              <div className="p-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                <p className="text-slate-400 text-xs font-mono">No reports currently published in this index.</p>
-              </div>
-            ) : (
-              <div className="space-y-3 font-sans">
-                {researcherPosts.map((post) => (
-                  <div 
-                    key={post.id}
-                    onClick={() => onSelectPost(post.id)}
-                    className="group border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 bg-white dark:bg-slate-900/40 p-4 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all shadow-sm"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono font-bold text-rose-500 uppercase tracking-wider">
-                          /{post.category}
-                        </span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded font-mono font-bold uppercase leading-none">
-                          {post.readTime}
-                        </span>
+              {researcherPosts.length === 0 ? (
+                <div className="p-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  <p className="text-slate-400 text-xs font-mono">No reports currently published in this index.</p>
+                </div>
+              ) : (
+                <div className="space-y-3 font-sans">
+                  {researcherPosts.map((post) => (
+                    <div 
+                      key={post.id}
+                      onClick={() => onSelectPost(post.id)}
+                      className="group border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 bg-white dark:bg-slate-900/40 p-4 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all shadow-sm"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-bold text-rose-500 uppercase tracking-wider">
+                            /{post.category}
+                          </span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded font-mono font-bold uppercase leading-none">
+                            {post.readTime}
+                          </span>
+                        </div>
+                        <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white group-hover:text-rose-500 transition-colors leading-snug">
+                          {post.title}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                          {post.summary}
+                        </p>
                       </div>
-                      <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white group-hover:text-rose-500 transition-colors leading-snug">
-                        {post.title}
-                      </h3>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                        {post.summary}
-                      </p>
+                      <ChevronRight size={15} className="text-slate-400 group-hover:text-rose-500 transition-colors shrink-0 group-hover:translate-x-0.5" />
                     </div>
-                    <ChevronRight size={15} className="text-slate-400 group-hover:text-rose-500 transition-colors shrink-0 group-hover:translate-x-0.5" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
 
