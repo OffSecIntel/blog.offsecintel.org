@@ -86,17 +86,22 @@ export function ArticleAssetsWidget({ postSlug, themeColor, isDark, hiddenAssets
     });
   };
 
-  // Filter out banner/hero/cover images as they are used for presentation, not analysis
+  // Hybrid approach: Respect explicit overrides, folder conventions, and sensible fallbacks
   const displayAssets = assets.filter(a => {
     const fileName = a.name.split('/').pop() || a.name;
     const lowerName = a.name.toLowerCase();
     
-    // Explicit override via markdown frontmatter
+    // 1. Explicit Configuration (Markdown frontmatter override)
     if (hiddenAssets && hiddenAssets.length > 0) {
       return !hiddenAssets.some(hidden => lowerName.includes(hidden.toLowerCase()) || hidden.toLowerCase() === fileName.toLowerCase());
     }
     
-    // Default fallback: hide presentation images
+    // 2. Folder Convention (Zero-config)
+    if (lowerName.endsWith('.apk')) return true; // APKs are always analyst targets
+    if (lowerName.includes('/downloads/') || lowerName.includes('/public/')) return true;
+    if (lowerName.includes('/private/')) return false;
+    
+    // 3. Sensible Fallback (For files at root)
     if (a.type !== 'image') return true;
     return !lowerName.includes('banner') && !lowerName.includes('hero') && !lowerName.includes('cover');
   });
