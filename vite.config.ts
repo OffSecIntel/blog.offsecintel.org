@@ -126,6 +126,30 @@ function copyBlogAssetsPlugin(): Plugin {
   };
 }
 
+/**
+ * Copies site-level social preview images from src/assets/og/ into
+ * dist/assets/og/, mirroring how copyBlogAssetsPlugin handles blog-assets/.
+ *
+ * These are referenced as absolute URLs in <meta og:image> / twitter:image and
+ * in App.tsx. Vite does not rewrite <meta content> URLs, so the files must land
+ * at a stable, unhashed path. Generator tooling (fonts) lives under scripts/ so
+ * this directory contains served output only.
+ */
+function copySiteOgAssetsPlugin(): Plugin {
+  return {
+    name: 'copy-site-og-assets',
+    apply: 'build',
+    closeBundle() {
+      const srcDir = path.resolve(__dirname, 'src/assets/og');
+      const distDir = path.resolve(__dirname, 'dist', 'assets', 'og');
+      if (fs.existsSync(srcDir)) {
+        fs.cpSync(srcDir, distDir, { recursive: true });
+        console.log(`[copy-site-og-assets] Successfully copied src/assets/og to dist/assets/og`);
+      }
+    },
+  };
+}
+
 import { execSync } from 'child_process';
 
 const getGitCommitHash = () => {
@@ -145,7 +169,7 @@ export default defineConfig(() => {
     define: {
       __GIT_COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
     },
-    plugins: [react(), tailwindcss(), copyBlogAssetsPlugin()],
+    plugins: [react(), tailwindcss(), copyBlogAssetsPlugin(), copySiteOgAssetsPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
