@@ -3,12 +3,20 @@
 ## Branching
 
 ```
-feature/* | fix/*   →   dev   →   main
+<username>/<type>/<name>   →   dev   →   main
 ```
 
 - Cut every branch from `dev`. Never commit directly to `dev` or `main` — the repository ruleset blocks it.
 - **One branch = one unit of work** (a feature, an iteration, or a substantial bug fix). Everything on the branch relates to that single theme.
-- Branch names: `feature/<author>/<short-slug>`, `fix/<author>/<short-slug>`, `test/<author>/<short-slug>`.
+- **Branch naming — username first**: `<username>/<type>/<name>`, where `<type>` is one of `feature`, `fix`, `test`, `chore`, `refactor`, `docs`.
+
+  ```
+  alexdos2010m/feature/guardrails
+  alexdos2010m/fix/og-image-404-path
+  alexdos2010m/test/url-taxonomy-guard
+  ```
+
+  This groups every branch under its author in the branch list, which is why the username leads.
 
 ## Commits
 
@@ -33,8 +41,10 @@ Messages must be self-contained: describe the change by real file and module nam
 
 ## Promotion
 
-- **`feature/*` → `dev`**: one pull request per branch when its work is done. CI-gated, deploys nothing.
-- **`dev` → `main`**: batched. Open this only when a full iteration or a substantial bug fix is complete, or as an end-of-sprint roll-up. **Merging to `main` deploys to production.**
+Work never reaches `main` directly. It always goes through `dev` first:
+
+1. **`<username>/<type>/<name>` → `dev`** — one pull request per branch, opened when that branch's unit of work is done. CI-gated, deploys nothing. This is the frequent step.
+2. **`dev` → `main`** — batched, and only once everything accumulated on `dev` is ready to ship: a full iteration complete, a substantial bug fix done, or an end-of-sprint roll-up. **Merging to `main` deploys to production.**
 
 ## Before opening a `dev` → `main` pull request
 
