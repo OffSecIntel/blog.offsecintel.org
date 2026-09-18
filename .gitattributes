@@ -43,5 +43,7 @@ CNAME           text
 *.pdf           binary
 *.zip           binary
 
-# Keep generated lockfiles out of diff noise but still merge-resolvable.
-package-lock.json  text -diff
+# package-lock.json is deliberately left fully diffable. Suppressing its diff
+# hides exactly the detail you need when verifying that a dependency bump or an
+# `npm audit fix` changed only what you expected.
+package-lock.json  text
