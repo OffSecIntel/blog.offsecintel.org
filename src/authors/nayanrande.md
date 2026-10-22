@@ -4,15 +4,16 @@ name: "Nayan Rande"
 alias: "alexdos2010m"
 githubUrl: "https://github.com/alexdos2010m"
 htbUrl: "https://www.linkedin.com/in/nayanrande"
-role: "Detection Engineer & Threat Researcher"
-specialties: "Android Malware Analysis, KQL/PLX SQL Detection-as-Code, Reverse Engineering, Threat Hunting, EDR Telemetry"
+role: "Tower Lead, Security Operations Center (SOC) at Payatu"
+specialties: "Security Monitoring, Detection Engineering, Threat Hunting, Incident Response, Android Malware Analysis, Reverse Engineering, EDR/XDR Telemetry"
 ---
-Nayan Rande is a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), specializing in advanced Android malware reverse engineering, EDR/XDR telemetry architectures, and custom detection-as-code engineering. With over 4+ years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
+Nayan Rande is Tower Lead for the Security Operations Center (SOC) at Payatu, where he leads the security operations practice covering monitoring, detection engineering, threat hunting, and incident response for client environments. He previously worked as a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), and specializes in Android malware reverse engineering, EDR/XDR telemetry architectures, and detection-as-code engineering. With 4+ years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
 
 ## Technical Specialties & Research Areas
 
 * **Android Malware Reverse Engineering & Instrumentation:** Experienced in static and dynamic analysis of complex Android binaries using JadX, Ghidra, and IDA Pro. Proficient in low-level behavior analysis of diverse application frameworks (Flutter, Il2Cpp, Xamarin, React Native) utilizing custom instrumentations with Frida and http-toolkit.
-* **Detection-as-Code & Telemetry Tuning:** Authoring production threat detection rules in PLX SQL (Google's proprietary DSL) for the Play Store ecosystem, and designing optimized KQL and C# behavioral detections for Windows/Linux endpoint security. Expert in false-positive alert tuning, having reduced enterprise alert noise by 40% across active security operations.
+* **SOC Leadership & Detection Engineering:** Leading SOC operations at Payatu across security monitoring, detection engineering, threat hunting, and incident response for client environments.
+* **Detection-as-Code & Telemetry Tuning:** Previously authored production threat detection rules in PLX SQL (Google's proprietary DSL) for the Play Store ecosystem at GOC, and designs optimized KQL and C# behavioral detections for Windows/Linux endpoint security. Expert in false-positive alert tuning, having reduced enterprise alert noise by 40% across active security operations.
 * **Proactive Threat Hunting & Campaign Mapping:** Executing hypothesis-driven threat hunting exercises mapped directly to the MITRE ATT&CK framework. Expert in IOC correlation, telemetry enrichment (including AMSI-enriched PowerShell monitoring), and technical runbook engineering.
 
 ## Technical Publications & Core Projects
