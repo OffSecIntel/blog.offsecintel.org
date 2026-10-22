@@ -7,7 +7,7 @@ htbUrl: "https://www.linkedin.com/in/nayanrande"
 role: "Tower Lead, Security Operations Center (SOC) at Payatu"
 specialties: "Security Monitoring, Detection Engineering, Threat Hunting, Incident Response, Android Malware Analysis, Reverse Engineering, EDR/XDR Telemetry"
 ---
-Nayan Rande is Tower Lead for the Security Operations Center (SOC) at Payatu, where he leads the security operations practice covering monitoring, detection engineering, threat hunting, and incident response for client environments. He previously worked as a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), and specializes in Android malware reverse engineering, EDR/XDR telemetry architectures, and detection-as-code engineering. With 4+ years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
+Nayan Rande is Tower Lead for the Security Operations Center (SOC) at Payatu, where he leads the security operations practice covering monitoring, detection engineering, threat hunting, and incident response for client environments. He previously worked as a Detection Engineer and Threat Researcher at the Google Operations Center (GOC), and specializes in Android malware reverse engineering, EDR/XDR telemetry architectures, and detection-as-code engineering. With 5+ years of hands-on defensive security experience, he focuses on designing robust threat-detection frameworks, unpacking complex mobile malware families, and orchestrating automated analysis pipelines.
 
 ## Technical Specialties & Research Areas
 
