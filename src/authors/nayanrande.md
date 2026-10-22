@@ -13,7 +13,7 @@ Nayan Rande is Tower Lead for the Security Operations Center (SOC) at Payatu, wh
 
 * **Android Malware Reverse Engineering & Instrumentation:** Experienced in static and dynamic analysis of complex Android binaries using JadX, Ghidra, and IDA Pro. Proficient in low-level behavior analysis of diverse application frameworks (Flutter, Il2Cpp, Xamarin, React Native) utilizing custom instrumentations with Frida and http-toolkit.
 * **SOC Leadership & Detection Engineering:** Leading SOC operations at Payatu across security monitoring, detection engineering, threat hunting, and incident response for client environments.
-* **Detection-as-Code & Telemetry Tuning:** Previously authored production threat detection rules in PLX SQL (Google's proprietary DSL) for the Play Store ecosystem at GOC, and designs optimized KQL and C# behavioral detections for Windows/Linux endpoint security. Expert in false-positive alert tuning, having reduced enterprise alert noise by 40% across active security operations.
+* **Detection-as-Code & Telemetry Tuning:** Previously authored production threat detection rules in PLX SQL (Google's proprietary DSL) for the Play Store ecosystem at GOC, and designs optimized KQL and C# behavioral detections for Windows/Linux endpoint security. Expert in false-positive alert tuning, having reduced enterprise alert noise by 40% at LTIMindtree while supporting Microsoft security operations as a vendor.
 * **Proactive Threat Hunting & Campaign Mapping:** Executing hypothesis-driven threat hunting exercises mapped directly to the MITRE ATT&CK framework. Expert in IOC correlation, telemetry enrichment (including AMSI-enriched PowerShell monitoring), and technical runbook engineering.
 
 ## Technical Publications & Core Projects
