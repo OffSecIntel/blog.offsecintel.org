@@ -1,0 +1,49 @@
+# Normalise line endings.
+#
+# Every text file is stored LF in the repository and checked out using the
+# contributor's platform convention. The index is already LF-clean, so this
+# file locks in current behaviour rather than changing it — it stops a
+# contributor whose core.autocrlf is unset from committing CRLF.
+* text=auto eol=lf
+
+# Files that must stay LF in the working tree too (executed by CI on Linux).
+*.sh            text eol=lf
+*.mjs           text eol=lf
+
+# Explicit text types (defensive — keeps diffs and merges sane).
+*.ts            text
+*.tsx           text
+*.js            text
+*.cjs           text
+*.json          text
+*.md            text
+*.html          text
+*.css           text
+*.yml           text
+*.yaml          text
+*.xml           text
+*.svg           text
+*.txt           text
+*.csv           text
+*.webmanifest   text
+CNAME           text
+
+# Binary — never convert, never diff as text.
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.webp          binary
+*.ico           binary
+*.ttf           binary
+*.otf           binary
+*.woff          binary
+*.woff2         binary
+*.apk           binary
+*.pdf           binary
+*.zip           binary
+
+# package-lock.json is deliberately left fully diffable. Suppressing its diff
+# hides exactly the detail you need when verifying that a dependency bump or an
+# `npm audit fix` changed only what you expected.
+package-lock.json  text
