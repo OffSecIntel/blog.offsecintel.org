@@ -15,7 +15,7 @@ export interface PageMetaOptions {
 export class MetaManager {
   private static readonly DEFAULT_TITLE = 'OffSecIntel — Cyber Security Research & Threat Intelligence';
   private static readonly DEFAULT_DESCRIPTION = 'Technical publications by OffSecIntel covering vulnerability research, malware reverse engineering, detection engineering, exploit analysis, and cyber threat intelligence.';
-  private static readonly DEFAULT_IMAGE = '/blog-assets/uncloaking-two-faced-android-game-il2cpp/threat_intel_banner.jpg';
+  private static readonly DEFAULT_IMAGE = '/assets/og/offsecintel-og-default.png';
   private static readonly DEFAULT_THEME_COLOR = '#0b0f19';
 
   private static getAbsoluteUrl(pathOrUrl?: string): string {

@@ -1,6 +1,6 @@
 {
-  "name": "Cybersecurity & Scientific Research Blog Generator",
-  "description": "A highly polished, open-source markdown blogging platform tailored for cybersecurity and scientific research. Features dynamic URI paths, light/dark theme toggle, interactive threat intel (MITRE ATT&CK, CVE, IoC) widgets, a live split-screen markdown editor with an AI copilot, and static site export configurations for Hugo and Jekyll.",
+  "name": "OffSecIntel Research Desk",
+  "description": "A markdown-driven publication platform for cyber security research and threat intelligence. Posts and researcher profiles are authored as markdown with YAML frontmatter, resolved through a hierarchical taxonomy registry, and compiled to a fully static site. Features deep-linkable URIs, light/dark theming, interactive threat intel widgets (MITRE ATT&CK, CVE, IoC), per-post asset management, and an AI-assisted authoring copilot in local development.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

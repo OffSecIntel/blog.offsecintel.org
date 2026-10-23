@@ -65,9 +65,9 @@ function AppInner() {
 
   const siteTitle = activePost ? `${activePost.title} | OffSecIntel` : 'OffSecIntel — Cyber Security Research & Threat Intelligence';
   const siteDesc = activePost?.summary || 'Technical publications by OffSecIntel covering vulnerability research, malware reverse engineering, detection engineering, exploit analysis, and cyber threat intelligence.';
-  const siteImg = activePost?.bannerImage 
-    ? `https://blog.offsecintel.org${activePost.bannerImage.startsWith('/') ? '' : '/'}${activePost.bannerImage}` 
-    : 'https://blog.offsecintel.org/blog-assets/malware-re/uncloaking-two-faced-android-game-il2cpp/threat_intel_banner.jpg';
+  const siteImg = activePost?.bannerImage
+    ? `https://blog.offsecintel.org${activePost.bannerImage.startsWith('/') ? '' : '/'}${activePost.bannerImage}`
+    : 'https://blog.offsecintel.org/assets/og/offsecintel-og-default.png';
   const siteUrl = `https://blog.offsecintel.org/${activePost ? '?post=' + activePost.id : ''}`;
 
   return (

@@ -57,7 +57,7 @@ OffSecIntel repositories follow a strict, sequential branch promotion hierarchy:
 
 ```mermaid
 graph LR
-    A[feature/* or fix/*] -->|PR & Signed Commits| B[dev Integration Branch]
+    A[feature/* or fix/*] -->|Pull Request| B[dev Integration Branch]
     B -->|Staging / SIT / UAT Testing| B
     B -->|Verified Release PR| C[main / master Production]
 ```
@@ -66,12 +66,29 @@ graph LR
 2. **`dev` (Development & Integration Branch)**: Created off `main`/`master`. Serves as the central integration branch for testing environments (`dev`, `sit`, `uat`).
 3. **`feature/*` & `fix/*` (Feature Branches)**: Created strictly off `dev`. All feature branches merge into `dev` via Pull Request.
 
+### Enforced Controls (active today)
+
+These are enforced by the `Enforce CI Pipeline` repository ruleset on `main` and `dev`:
+
+| Control | Effect |
+|---|---|
+| Required status check `Build & Test` | `.github/workflows/ci.yml` must pass (lint, unit tests, production build, asset integrity) |
+| Pull request required | Direct pushes to `main` and `dev` are blocked; 0 approvals required |
+| Block branch deletion | `main` and `dev` cannot be deleted |
+| Block non-fast-forward | Force pushes are rejected |
+
+> [!NOTE]
+> Organization admins carry an `always` bypass on this ruleset, so these controls guard against accidental direct pushes rather than acting as a hard boundary for repository owners.
+
 ### CI/CD & Automated Testing Pipeline Roadmap
+
+> [!IMPORTANT]
+> The stages marked *(planned)* below are **not implemented yet**. They describe intended future controls, not current behaviour. Everything else in this diagram runs today via `.github/workflows/ci.yml` and `deploy.yml`.
 
 ```mermaid
 graph TD
     subgraph Dev_PR_Pipeline [Dev Integration PR Pipeline]
-        D1[PR Created to dev] --> D2[Signed Commit Signature Audit]
+        D1[PR Created to dev] --> D2["Signed Commit Signature Audit (planned)"]
         D2 --> D3[TypeScript & Syntax Check npm run lint]
         D3 --> D4[Unit & Component Test Suite]
         D4 --> D5[Vite Production Build Test npm run build]
@@ -79,12 +96,14 @@ graph TD
     end
 
     subgraph Production_Release_Pipeline [Production Release Pipeline]
-        P1[PR Created dev -> main] --> P2[Full Automated End-to-End Regression Suite]
-        P2 --> P3[Security & Signed Commit Verification Audit]
+        P1[PR Created dev -> main] --> P2["Full Automated End-to-End Regression Suite (planned)"]
+        P2 --> P3["Security & Signed Commit Verification Audit (planned)"]
         P3 --> P4[Merge into main / master]
         P4 --> P5[GitHub Actions Deployment to Production CDN / Pages]
     end
 ```
+
+**Planned-control backlog**: commit signing (GPG/SSH) requires contributors to configure signing keys locally before a `required_signatures` rule can be enabled, otherwise every unsigned commit is rejected. Deferred until the contributor set justifies the setup cost.
 
 ---
 
